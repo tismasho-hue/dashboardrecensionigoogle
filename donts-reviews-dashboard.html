@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DONTS Reviews Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      color: #e4e4e7;
+    }
+    
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      padding: 2rem;
+    }
+    
+    .login-container {
+      text-align: center;
+    }
+    
+    .login-header {
+      margin-bottom: 3rem;
+    }
+    
+    .login-header .login-logo {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #FF6B35 0%, #F7C59F 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    
+    .login-header .login-subtitle {
+      color: #71717a;
+      font-size: 1.1rem;
+    }
+    
+    .login-boxes {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .login-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2.5rem;
+      text-align: center;
+      min-width: 300px;
+      max-width: 350px;
+      transition: all 0.3s ease;
+    }
+    
+    .login-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    .admin-card:hover {
+      border-color: rgba(255,107,53,0.4);
+      box-shadow: 0 10px 40px rgba(255,107,53,0.15);
+    }
+    
+    .user-card:hover {
+      border-color: rgba(78,205,196,0.4);
+      box-shadow: 0 10px 40px rgba(78,205,196,0.15);
+    }
+    
+    .login-card-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .login-card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .login-card-desc {
+      color: #71717a;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .login-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    .login-input::placeholder {
+      color: #71717a;
+    }
+    
+    .login-input:focus {
+      outline: none;
+      border-color: #FF6B35;
+    }
+    
+    .login-error {
+      color: #f87171;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    
+    .login-button {
+      width: 100%;
+      color: #fff;
+      border: none;
+      padding: 1rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .admin-button {
+      background: #FF6B35;
+    }
+    
+    .admin-button:hover {
+      background: #ff8555;
+      transform: translateY(-2px);
+    }
+    
+    .user-button {
+      background: #4ECDC4;
+    }
+    
+    .user-button:hover {
+      background: #6ed7d0;
+      transform: translateY(-2px);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .user-role {
+      background: rgba(255,107,53,0.15);
+      color: #FF6B35;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .logout-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #a1a1aa;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .logo {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #FF6B35 0%, #F7C59F 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -2px;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #71717a;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    
+    .upload-zone {
+      border: 2px dashed #3f3f46;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .upload-zone.dragging {
+      border-color: #FF6B35;
+      background: rgba(255,107,53,0.1);
+    }
+    
+    .upload-icon {
+      color: #FF6B35;
+      margin-bottom: 1rem;
+    }
+    
+    .upload-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .upload-subtitle {
+      color: #71717a;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .upload-instructions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+    }
+    
+    .instruction-step {
+      color: #a1a1aa;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .instruction-step a {
+      color: #FF6B35;
+      text-decoration: none;
+    }
+    
+    .instruction-step a:hover {
+      text-decoration: underline;
+    }
+    
+    .instruction-step code {
+      background: rgba(255,107,53,0.2);
+      color: #FF6B35;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+    
+    .store-uploads {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .store-upload {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    
+    .store-upload:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--store-color);
+    }
+    
+    .store-upload input {
+      display: none;
+    }
+    
+    .store-upload .store-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .store-upload .store-hint {
+      color: #71717a;
+      font-size: 0.75rem;
+    }
+    
+    .general-upload {
+      margin-top: 1.5rem;
+    }
+    
+    .upload-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #FF6B35;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      border: none;
+      font-size: 1rem;
+    }
+    
+    .upload-button:hover {
+      background: #ff8555;
+      transform: translateY(-2px);
+    }
+    
+    .upload-button input {
+      display: none;
+    }
+    
+    .uploaded-files {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .uploaded-file {
+      background: rgba(255,107,53,0.2);
+      color: #FF6B35;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .clear-data {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: rgba(248,113,113,0.2);
+      color: #f87171;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .clear-data:hover {
+      background: rgba(248,113,113,0.3);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent, #FF6B35);
+      box-shadow: 0 8px 32px rgba(255,107,53,0.15);
+    }
+    
+    .stat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #a1a1aa;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+    }
+    
+    .stat-subtitle {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: #71717a;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    
+    .trend-up { color: #4ade80; }
+    .trend-down { color: #f87171; }
+    
+    .month-selector {
+      background: linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(255,107,53,0.05) 100%);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .month-arrow {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e4e4e7;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .month-arrow:hover:not(:disabled) {
+      background: rgba(255,107,53,0.2);
+      border-color: #FF6B35;
+    }
+    
+    .month-arrow:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    
+    .month-display {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #FF6B35;
+    }
+    
+    .current-month {
+      font-size: 1.5rem;
+      font-weight: 700;
+      min-width: 200px;
+      text-align: center;
+    }
+    
+    .month-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .month-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #a1a1aa;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .month-chip:hover {
+      background: rgba(255,255,255,0.08);
+      color: #e4e4e7;
+    }
+    
+    .month-chip.active {
+      background: #FF6B35;
+      border-color: #FF6B35;
+      color: #fff;
+      font-weight: 600;
+    }
+    
+    .current-month-display {
+      background: linear-gradient(135deg, rgba(78,205,196,0.15) 0%, rgba(78,205,196,0.05) 100%);
+      border: 1px solid rgba(78,205,196,0.3);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .current-month-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #4ECDC4;
+    }
+    
+    .current-month-label {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    
+    .current-prize-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255,255,255,0.05);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+    }
+    
+    .prize-emoji-small {
+      font-size: 2rem;
+    }
+    
+    .prize-details {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .prize-label-small {
+      font-size: 0.7rem;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+    
+    .prize-name-small {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #FF6B35;
+    }
+    .admin-controls {
+      background: linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(255,107,53,0.05) 100%);
+      border: 2px solid rgba(255,107,53,0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .admin-controls-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #FF6B35;
+      margin-bottom: 1.5rem;
+    }
+    
+    .admin-controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    
+    .admin-control-item {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .control-label {
+      font-size: 0.8rem;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+    
+    .control-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .control-btn {
+      background: #FF6B35;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .control-btn:hover {
+      background: #ff8555;
+      transform: translateY(-2px);
+    }
+    
+    .prize-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+    
+    .prize-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #e4e4e7;
+      font-family: "Space Grotesk", sans-serif;
+    }
+    
+    .prize-option:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: #FF6B35;
+    }
+    
+    .prize-option.selected {
+      background: rgba(255,107,53,0.2);
+      border-color: #FF6B35;
+    }
+    
+    .prize-option-emoji {
+      font-size: 1.5rem;
+    }
+    
+    .prize-option-name {
+      font-weight: 500;
+    }
+
+    .winner-card {
+      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,107,53,0.1) 100%);
+      border: 2px solid rgba(255,215,0,0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    
+    .winner-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .winner-trophy {
+      font-size: 3rem;
+    }
+    
+    .winner-title h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #FFD700;
+      margin: 0;
+    }
+    
+    .winner-title p {
+      color: #a1a1aa;
+      font-size: 0.85rem;
+      margin: 0;
+    }
+    
+    .winner-content {
+      text-align: center;
+    }
+    
+    .winner-name {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+    
+    .winner-stats {
+      color: #a1a1aa;
+      font-size: 0.9rem;
+    }
+    
+    .winner-prize {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255,255,255,0.05);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+    }
+    
+    .prize-emoji {
+      font-size: 2.5rem;
+    }
+    
+    .prize-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .prize-label {
+      font-size: 0.75rem;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+    
+    .prize-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #FF6B35;
+    }
+    
+    @media (max-width: 768px) {
+      .winner-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .winner-header {
+        justify-content: center;
+      }
+      
+      .winner-prize {
+        justify-content: center;
+      }
+    }
+    
+    .rankings-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    
+    .ranking-section {
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #fff;
+    }
+    
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .ranking-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      border-left: 3px solid var(--store-color);
+      transition: all 0.2s ease;
+    }
+    
+    .ranking-item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+    
+    .rank-badge {
+      font-size: 1.5rem;
+      width: 40px;
+      text-align: center;
+    }
+    
+    .ranking-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    .ranking-meta {
+      color: #71717a;
+      font-size: 0.8rem;
+    }
+    
+    .rating-display {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .ranking-bar {
+      grid-column: 1 / -1;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    
+    .ranking-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--store-color), #FFD700);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    
+    .sort-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .sort-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #a1a1aa;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .sort-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #e4e4e7;
+    }
+    
+    .sort-btn.active {
+      background: #FF6B35;
+      border-color: #FF6B35;
+      color: #fff;
+      font-weight: 600;
+    }
+    
+    .count-display {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    .count-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #FF6B35;
+    }
+    
+    .count-label {
+      font-size: 0.65rem;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+    
+    .cashier-manager {
+      margin-bottom: 1.5rem;
+    }
+    
+    .manager-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e4e4e7;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .manager-toggle:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .manager-panel {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+    }
+    
+    .add-cashier {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .add-cashier input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    
+    .add-cashier input::placeholder {
+      color: #71717a;
+    }
+    
+    .add-cashier button {
+      background: #FF6B35;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .add-cashier button:hover {
+      background: #ff8555;
+    }
+    
+    .cashier-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .cashier-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,107,53,0.15);
+      color: #FF6B35;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    
+    .cashier-tag svg {
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+    
+    .cashier-tag svg:hover {
+      opacity: 1;
+    }
+    
+    .cashier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .cashier-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    
+    .cashier-card:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .cashier-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      cursor: pointer;
+    }
+    
+    .cashier-rank {
+      font-size: 1.25rem;
+      width: 36px;
+      text-align: center;
+    }
+    
+    .cashier-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .can-win-badge {
+      background: rgba(74,222,128,0.2);
+      color: #4ade80;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    
+    .min-mentions-info {
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.2);
+      color: #FF6B35;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin-top: 0.5rem;
+      position: relative;
+      overflow: visible;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #FF6B35, #FFD700);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+      position: absolute;
+      right: 0;
+      top: -18px;
+      font-size: 0.7rem;
+      color: #71717a;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .cashier-card.can-win {
+      border: 1px solid rgba(74,222,128,0.3);
+    }
+    
+    .winner-card.no-winner {
+      background: linear-gradient(135deg, rgba(113,113,122,0.15) 0%, rgba(63,63,70,0.1) 100%);
+      border-color: rgba(113,113,122,0.3);
+    }
+    
+    .winner-card.no-winner .winner-title h3 {
+      color: #a1a1aa;
+    }
+    
+    .winner-prize.pending {
+      opacity: 0.7;
+    }
+    
+    .cashier-metrics {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+    
+    .metric {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .metric.positive {
+      background: rgba(74,222,128,0.15);
+      color: #4ade80;
+    }
+    
+    .metric.negative {
+      background: rgba(248,113,113,0.15);
+      color: #f87171;
+    }
+    
+    .metric.rating {
+      background: rgba(255,215,0,0.15);
+      color: #FFD700;
+    }
+    
+    .cashier-score {
+      text-align: center;
+    }
+    
+    .score-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #FF6B35;
+    }
+    
+    .score-label {
+      font-size: 0.65rem;
+      color: #71717a;
+      text-transform: uppercase;
+    }
+    
+    .cashier-mentions {
+      color: #a1a1aa;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    
+    .cashier-reviews {
+      padding: 0 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .review-snippet {
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      padding: 0.75rem;
+      border-left: 2px solid #71717a;
+    }
+    
+    .review-snippet.positive {
+      border-color: #4ade80;
+    }
+    
+    .review-snippet.negative {
+      border-color: #f87171;
+    }
+    
+    .snippet-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+    
+    .sentiment-badge {
+      margin-left: auto;
+    }
+    
+    .review-snippet p {
+      color: #a1a1aa;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #71717a;
+    }
+    
+    .empty-state svg {
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    @media (max-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .rankings-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .store-uploads {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .dashboard {
+        padding: 1rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .store-uploads {
+        grid-template-columns: 1fr;
+      }
+      
+      .cashier-header {
+        grid-template-columns: auto 1fr auto;
+      }
+      
+      .cashier-mentions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    // Icons as simple SVG components
+    const Icon = ({ name, size = 24, fill = "none", stroke = "currentColor" }) => {
+      const icons = {
+        upload: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />,
+        star: <polygon fill={fill} points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />,
+        trendingUp: <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></>,
+        trendingDown: <><polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" /></>,
+        users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+        store: <><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></>,
+        award: <><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></>,
+        alertCircle: <><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></>,
+        x: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
+        chevronDown: <polyline points="6 9 12 15 18 9" />,
+        chevronUp: <polyline points="18 15 12 9 6 15" />,
+        chevronLeft: <polyline points="15 18 9 12 15 6" />,
+        chevronRight: <polyline points="9 18 15 12 9 6" />,
+        calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>
+      };
+      
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {icons[name]}
+        </svg>
+      );
+    };
+
+    const STORES = [
+      { id: 'istria', name: 'Piazza Istria', color: '#FF6B35' },
+      { id: 'trastevere', name: 'Trastevere', color: '#4ECDC4' },
+      { id: 'ponte', name: 'Ponte Milvio', color: '#95E1D3' },
+      { id: 'tuscolana', name: 'Tuscolana', color: '#F38181' }
+    ];
+
+    // Google Takeout location ID mapping
+    const LOCATION_ID_MAP = {
+      '2622842657199981833': 'trastevere',
+      '7316952155162150680': 'tuscolana',
+      '7773309171614314525': 'istria',
+      '16703766235422777690': 'ponte'
+    };
+
+    function detectStoreFromLocationId(text) {
+      for (const [locationId, storeId] of Object.entries(LOCATION_ID_MAP)) {
+        if (text.includes(locationId)) {
+          return storeId;
+        }
+      }
+      return null;
+    }
+
+    const CASHIERS = [
+      'Marco', 'Giulia', 'Alessandro', 'Francesca', 'Luca', 
+      'Sofia', 'Matteo', 'Chiara', 'Andrea', 'Valentina',
+      'Giovanni', 'Martina', 'Federico', 'Elena', 'Simone'
+    ];
+
+    const MONTHS_IT = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+    // Premi a rotazione per il 1° classificato
+    const PRIZES = [
+      { id: 1, name: 'Weekend libero pagato', emoji: '🏖️' },
+      { id: 2, name: 'Buono Amazon 100€', emoji: '🎁' },
+      { id: 3, name: '100€ cash', emoji: '💰' },
+      { id: 4, name: 'Cena per 2 persone', emoji: '🍽️' },
+      { id: 5, name: 'Giorno libero extra', emoji: '🌴' }
+    ];
+
+    function getPrizeForMonth(monthKey) {
+      if (!monthKey) return null;
+      const [year, month] = monthKey.split('-');
+      const monthIndex = parseInt(month) - 1; // 0-11
+      const prizeIndex = monthIndex % PRIZES.length;
+      return PRIZES[prizeIndex];
+    }
+
+    function parseReviewDate(dateStr) {
+      if (!dateStr) return null;
+      
+      let match = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+      if (match) {
+        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+      }
+      
+      match = dateStr.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (match) {
+        return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+      }
+      
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+      
+      return null;
+    }
+
+    function getMonthKey(date) {
+      if (!date) return null;
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatMonthLabel(monthKey) {
+      if (!monthKey) return 'Tutti';
+      const [year, month] = monthKey.split('-');
+      return `${MONTHS_IT[parseInt(month) - 1]} ${year}`;
+    }
+
+    function analyzeSentiment(text, rating) {
+      // Sentiment based on star rating: 1-3 = negative, 4-5 = positive
+      if (rating >= 4) return 'positive';
+      if (rating >= 1 && rating <= 3) return 'negative';
+      return 'neutral';
+    }
+
+    function parseGoogleTakeoutJSON(jsonData, fileName = '') {
+      const reviews = [];
+      let reviewsArray = [];
+      let detectedStore = null;
+      
+      // Try to detect store from filename
+      detectedStore = detectStoreFromLocationId(fileName);
+      
+      if (Array.isArray(jsonData)) {
+        reviewsArray = jsonData;
+      } else if (jsonData.reviews) {
+        reviewsArray = jsonData.reviews;
+      } else if (jsonData.locations) {
+        jsonData.locations.forEach(location => {
+          if (location.reviews) {
+            location.reviews.forEach(r => {
+              reviewsArray.push({ ...r, locationName: location.name || location.locationName });
+            });
+          }
+        });
+      }
+      
+      reviewsArray.forEach(review => {
+        let rating = 0;
+        if (review.starRating) {
+          const ratingMap = { 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5 };
+          rating = ratingMap[review.starRating] || 0;
+        } else if (review.rating) {
+          rating = parseFloat(review.rating) || 0;
+        } else if (review.star_rating) {
+          rating = parseFloat(review.star_rating) || 0;
+        }
+        
+        const text = review.comment || review.text || review.reviewText || review.review || '';
+        const date = review.createTime || review.updateTime || review.date || review.reviewDate || '';
+        const reviewer = review.reviewer?.displayName || review.reviewerName || review.author || review.name || 'Anonimo';
+        
+        // Try to detect store from review name field (contains location ID)
+        let store = detectedStore || review.locationName || review.location || review.store || '';
+        if (!store && review.name) {
+          store = detectStoreFromLocationId(review.name) || '';
+        }
+        
+        const reply = review.reviewReply?.comment || review.ownerResponse || review.reply || '';
+        
+        reviews.push({
+          rating,
+          text,
+          date,
+          reviewer,
+          store,
+          reply,
+          _original: review
+        });
+      });
+      
+      return reviews;
+    }
+
+    function parseCSV(csvText) {
+      const lines = csvText.split('\n');
+      const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+      
+      const reviews = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (const char of lines[i]) {
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim().replace(/^"|"$/g, ''));
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        
+        const rawReview = {};
+        rawHeaders.forEach((header, index) => {
+          rawReview[header] = values[index] || '';
+        });
+        
+        // Normalize to standard format (support Phantom CSV format)
+        const review = {
+          date: rawReview['review date'] || rawReview['date'] || rawReview['data'] || '',
+          rating: parseFloat(rawReview['star rating'] || rawReview['rating'] || rawReview['stelle'] || '0'),
+          text: rawReview['review content'] || rawReview['text'] || rawReview['review'] || rawReview['comment'] || '',
+          reviewer: rawReview['author name'] || rawReview['reviewer'] || rawReview['name'] || rawReview['autore'] || 'Anonimo',
+          store: ''
+        };
+        
+        reviews.push(review);
+      }
+      
+      return reviews;
+    }
+
+    function StatCard({ title, value, subtitle, icon, trend, color }) {
+      return (
+        <div className="stat-card" style={{ '--accent': color }}>
+          <div className="stat-header">
+            <Icon name={icon} size={20} />
+            <span>{title}</span>
+          </div>
+          <div className="stat-value">{value}</div>
+          {subtitle && (
+            <div className="stat-subtitle">
+              {trend === 'up' && <Icon name="trendingUp" size={14} />}
+              {trend === 'down' && <Icon name="trendingDown" size={14} />}
+              {subtitle}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function WinnerCard({ winner, prize, month, noWinnerMessage }) {
+      if (noWinnerMessage) {
+        return (
+          <div className="winner-card no-winner">
+            <div className="winner-header">
+              <span className="winner-trophy">🎯</span>
+              <div className="winner-title">
+                <h3>Nessun vincitore {month}</h3>
+                <p>Servono almeno 50 menzioni per vincere!</p>
+              </div>
+            </div>
+            <div className="winner-content">
+              <div className="winner-name">Traguardo non raggiunto</div>
+              <div className="winner-stats">
+                Nessun cassiere ha raggiunto le 50 menzioni questo mese
+              </div>
+            </div>
+            <div className="winner-prize pending">
+              <span className="prize-emoji">{prize?.emoji || '🎁'}</span>
+              <div className="prize-info">
+                <span className="prize-label">Premio in palio</span>
+                <span className="prize-name">{prize?.name || 'Premio'}</span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      if (!winner || !prize) return null;
+      
+      return (
+        <div className="winner-card">
+          <div className="winner-header">
+            <span className="winner-trophy">🏆</span>
+            <div className="winner-title">
+              <h3>Vincitore {month}</h3>
+              <p>Classifica Cassieri</p>
+            </div>
+          </div>
+          <div className="winner-content">
+            <div className="winner-name">{winner.name}</div>
+            <div className="winner-stats">
+              {winner.mentions} menzioni • {winner.positiveCount} positive • ⭐ {winner.avgRating}
+            </div>
+          </div>
+          <div className="winner-prize">
+            <span className="prize-emoji">{prize.emoji}</span>
+            <div className="prize-info">
+              <span className="prize-label">Premio del mese</span>
+              <span className="prize-name">{prize.name}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel, saveSettingToSupabase }) {
+      const [showPrizeSelector, setShowPrizeSelector] = useState(false);
+
+      const handleSetUserMonth = async () => {
+        if (selectedMonth) {
+          setUserMonth(selectedMonth);
+          await saveSettingToSupabase('user_month', selectedMonth);
+          alert(`Mese impostato per User: ${formatMonthLabel(selectedMonth)}`);
+        } else {
+          alert('Seleziona prima un mese!');
+        }
+      };
+
+      const handleSetUserPrize = async (prize) => {
+        setUserPrize(prize);
+        await saveSettingToSupabase('user_prize', JSON.stringify(prize));
+        setShowPrizeSelector(false);
+        alert(`Premio impostato per User: ${prize.name}`);
+      };
+
+      return (
+        <div className="admin-controls">
+          <h3 className="admin-controls-title">⚙️ Controlli Admin - Imposta Dashboard User</h3>
+          
+          <div className="admin-controls-row">
+            <div className="admin-control-item">
+              <span className="control-label">Mese attuale per User:</span>
+              <span className="control-value">{userMonth ? formatMonthLabel(userMonth) : 'Non impostato'}</span>
+              <button className="control-btn" onClick={handleSetUserMonth}>
+                📅 Imposta "{selectedMonth ? formatMonthLabel(selectedMonth) : '...'}" per User
+              </button>
+            </div>
+            
+            <div className="admin-control-item">
+              <span className="control-label">Premio attuale per User:</span>
+              <span className="control-value">{userPrize ? `${userPrize.emoji} ${userPrize.name}` : 'Non impostato'}</span>
+              <button className="control-btn" onClick={() => setShowPrizeSelector(!showPrizeSelector)}>
+                🎁 Scegli Premio per User
+              </button>
+              
+              {showPrizeSelector && (
+                <div className="prize-selector">
+                  {PRIZES.map(prize => (
+                    <button 
+                      key={prize.id} 
+                      className={`prize-option ${userPrize?.id === prize.id ? 'selected' : ''}`}
+                      onClick={() => handleSetUserPrize(prize)}
+                    >
+                      <span className="prize-option-emoji">{prize.emoji}</span>
+                      <span className="prize-option-name">{prize.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CurrentMonthDisplay({ month, prize }) {
+      return (
+        <div className="current-month-display">
+          <div className="current-month-info">
+            <Icon name="calendar" size={24} />
+            <span className="current-month-label">{month}</span>
+          </div>
+          {prize && (
+            <div className="current-prize-info">
+              <span className="prize-emoji-small">{prize.emoji}</span>
+              <div className="prize-details">
+                <span className="prize-label-small">Premio in palio</span>
+                <span className="prize-name-small">{prize.name}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function MonthSelector({ availableMonths, selectedMonth, setSelectedMonth }) {
+      const currentIndex = selectedMonth ? availableMonths.indexOf(selectedMonth) : -1;
+      
+      const goToPrevMonth = () => {
+        if (currentIndex < availableMonths.length - 1) {
+          setSelectedMonth(availableMonths[currentIndex + 1]);
+        }
+      };
+      
+      const goToNextMonth = () => {
+        if (currentIndex > 0) {
+          setSelectedMonth(availableMonths[currentIndex - 1]);
+        } else if (currentIndex === 0) {
+          setSelectedMonth(null);
+        }
+      };
+
+      return (
+        <div className="month-selector">
+          <div className="month-nav">
+            <button className="month-arrow" onClick={goToPrevMonth} disabled={currentIndex >= availableMonths.length - 1}>
+              <Icon name="chevronLeft" size={20} />
+            </button>
+            
+            <div className="month-display">
+              <Icon name="calendar" size={20} />
+              <span className="current-month">
+                {selectedMonth ? formatMonthLabel(selectedMonth) : 'Tutti i mesi'}
+              </span>
+            </div>
+            
+            <button className="month-arrow" onClick={goToNextMonth} disabled={!selectedMonth}>
+              <Icon name="chevronRight" size={20} />
+            </button>
+          </div>
+          
+          <div className="month-chips">
+            <button className={`month-chip ${!selectedMonth ? 'active' : ''}`} onClick={() => setSelectedMonth(null)}>
+              Tutti
+            </button>
+            {availableMonths.slice(0, 6).map(month => (
+              <button
+                key={month}
+                className={`month-chip ${selectedMonth === month ? 'active' : ''}`}
+                onClick={() => setSelectedMonth(month)}
+              >
+                {formatMonthLabel(month)}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function StoreRanking({ stores, reviews }) {
+      const [sortBy, setSortBy] = useState('rating'); // 'rating' or 'count'
+      
+      const storeStats = useMemo(() => {
+        return STORES.map(store => {
+          const storeReviews = reviews.filter(r => 
+            r.store?.toLowerCase() === store.id || 
+            r.store?.toLowerCase().includes(store.name.toLowerCase())
+          );
+          
+          const totalRating = storeReviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0);
+          const avgRating = storeReviews.length > 0 ? totalRating / storeReviews.length : 0;
+          const positiveCount = storeReviews.filter(r => analyzeSentiment(r.text || '', r.rating) === 'positive').length;
+          
+          return {
+            ...store,
+            reviewCount: storeReviews.length,
+            avgRating: avgRating.toFixed(2),
+            positivePercent: storeReviews.length > 0 ? Math.round((positiveCount / storeReviews.length) * 100) : 0
+          };
+        });
+      }, [reviews]);
+
+      const sortedStats = useMemo(() => {
+        return [...storeStats].sort((a, b) => {
+          if (sortBy === 'rating') {
+            return parseFloat(b.avgRating) - parseFloat(a.avgRating);
+          } else {
+            return b.reviewCount - a.reviewCount;
+          }
+        });
+      }, [storeStats, sortBy]);
+
+      const maxReviews = Math.max(...storeStats.map(s => s.reviewCount), 1);
+
+      return (
+        <div className="ranking-section">
+          <h2 className="section-title">
+            <Icon name="store" size={24} />
+            Classifica Store
+          </h2>
+          
+          <div className="sort-toggle">
+            <button 
+              className={`sort-btn ${sortBy === 'rating' ? 'active' : ''}`}
+              onClick={() => setSortBy('rating')}
+            >
+              ⭐ Per Rating
+            </button>
+            <button 
+              className={`sort-btn ${sortBy === 'count' ? 'active' : ''}`}
+              onClick={() => setSortBy('count')}
+            >
+              📊 Per N° Recensioni
+            </button>
+          </div>
+          
+          <div className="ranking-list">
+            {sortedStats.map((store, index) => (
+              <div key={store.id} className="ranking-item" style={{ '--store-color': store.color }}>
+                <div className="rank-badge">
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                </div>
+                <div className="ranking-info">
+                  <div className="ranking-name">{store.name}</div>
+                  <div className="ranking-meta">
+                    {store.reviewCount} recensioni • {store.positivePercent}% positive
+                  </div>
+                </div>
+                <div className="ranking-score">
+                  {sortBy === 'rating' ? (
+                    <div className="rating-display">
+                      <Icon name="star" size={18} fill="#FFD700" stroke="#FFD700" />
+                      <span>{store.avgRating}</span>
+                    </div>
+                  ) : (
+                    <div className="count-display">
+                      <span className="count-value">{store.reviewCount}</span>
+                      <span className="count-label">recensioni</span>
+                    </div>
+                  )}
+                </div>
+                <div className="ranking-bar">
+                  <div 
+                    className="ranking-bar-fill" 
+                    style={{ 
+                      width: sortBy === 'rating' 
+                        ? `${(parseFloat(store.avgRating) / 5) * 100}%`
+                        : `${(store.reviewCount / maxReviews) * 100}%`
+                    }} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function CashierRanking({ reviews, cashiers }) {
+      const [expandedCashier, setExpandedCashier] = useState(null);
+      const MIN_MENTIONS = 50;
+      
+      const cashierStats = useMemo(() => {
+        return cashiers.map(name => {
+          const mentions = [];
+          
+          reviews.forEach(review => {
+            const text = review.text || '';
+            if (text.toLowerCase().includes(name.toLowerCase())) {
+              mentions.push({
+                text,
+                rating: parseFloat(review.rating) || 0,
+                sentiment: analyzeSentiment(text, parseFloat(review.rating) || 0),
+                date: review.date || '',
+                store: review.store || ''
+              });
+            }
+          });
+          
+          const positiveCount = mentions.filter(m => m.sentiment === 'positive').length;
+          const negativeCount = mentions.filter(m => m.sentiment === 'negative').length;
+          const totalRating = mentions.reduce((sum, m) => sum + m.rating, 0);
+          const avgRating = mentions.length > 0 ? totalRating / mentions.length : 0;
+          
+          const score = mentions.length > 0 
+            ? (avgRating * 20) + (positiveCount * 5) - (negativeCount * 10) + (mentions.length * 2)
+            : 0;
+          
+          const progressToWin = Math.min(100, (mentions.length / MIN_MENTIONS) * 100);
+          const canWin = mentions.length >= MIN_MENTIONS;
+          
+          return {
+            name,
+            mentions: mentions.length,
+            positiveCount,
+            negativeCount,
+            avgRating: avgRating.toFixed(2),
+            score: Math.max(0, score).toFixed(0),
+            recentMentions: mentions.slice(0, 3),
+            progressToWin,
+            canWin
+          };
+        })
+        .filter(c => c.mentions > 0)
+        .sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+      }, [reviews, cashiers]);
+
+      return (
+        <div className="ranking-section">
+          <h2 className="section-title">
+            <Icon name="users" size={24} />
+            Classifica Cassieri
+          </h2>
+          <div className="min-mentions-info">
+            🎯 Minimo 50 menzioni per vincere il premio
+          </div>
+          {cashierStats.length === 0 ? (
+            <div className="empty-state">
+              <Icon name="alertCircle" size={32} />
+              <p>Nessun cassiere menzionato nelle recensioni</p>
+            </div>
+          ) : (
+            <div className="cashier-list">
+              {cashierStats.map((cashier, index) => (
+                <div key={cashier.name} className={`cashier-card ${cashier.canWin ? 'can-win' : ''}`}>
+                  <div className="cashier-header" onClick={() => setExpandedCashier(expandedCashier === cashier.name ? null : cashier.name)}>
+                    <div className="cashier-rank">
+                      {index === 0 ? '🏆' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </div>
+                    <div className="cashier-info">
+                      <div className="cashier-name">
+                        {cashier.name}
+                        {cashier.canWin && <span className="can-win-badge">✓ Idoneo</span>}
+                      </div>
+                      <div className="cashier-metrics">
+                        <span className="metric positive">
+                          <Icon name="trendingUp" size={12} /> {cashier.positiveCount}
+                        </span>
+                        <span className="metric negative">
+                          <Icon name="trendingDown" size={12} /> {cashier.negativeCount}
+                        </span>
+                        <span className="metric rating">
+                          <Icon name="star" size={12} fill="#FFD700" stroke="#FFD700" /> {cashier.avgRating}
+                        </span>
+                      </div>
+                      {!cashier.canWin && (
+                        <div className="progress-bar-container">
+                          <div className="progress-bar" style={{ width: `${cashier.progressToWin}%` }}></div>
+                          <span className="progress-text">{cashier.mentions}/50</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="cashier-score">
+                      <div className="score-value">{index + 1}°</div>
+                      <div className="score-label">posizione</div>
+                    </div>
+                    <div className="cashier-mentions">{cashier.mentions} menzioni</div>
+                    <Icon name={expandedCashier === cashier.name ? 'chevronUp' : 'chevronDown'} size={20} />
+                  </div>
+                  
+                  {expandedCashier === cashier.name && cashier.recentMentions.length > 0 && (
+                    <div className="cashier-reviews">
+                      {cashier.recentMentions.map((mention, i) => (
+                        <div key={i} className={`review-snippet ${mention.sentiment}`}>
+                          <div className="snippet-header">
+                            <Icon name="star" size={14} fill="#FFD700" stroke="#FFD700" />
+                            <span>{mention.rating}</span>
+                            <span className={`sentiment-badge ${mention.sentiment}`}>
+                              {mention.sentiment === 'positive' ? '👍' : mention.sentiment === 'negative' ? '👎' : '➖'}
+                            </span>
+                          </div>
+                          <p>"{mention.text.substring(0, 150)}..."</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function CashierManager({ cashiers, setCashiers, saveCashierToSupabase, deleteCashierFromSupabase }) {
+      const [newCashier, setNewCashier] = useState('');
+      const [isOpen, setIsOpen] = useState(false);
+
+      const addCashier = async () => {
+        if (newCashier.trim() && !cashiers.includes(newCashier.trim())) {
+          const name = newCashier.trim();
+          setCashiers([...cashiers, name]);
+          await saveCashierToSupabase(name);
+          setNewCashier('');
+        }
+      };
+
+      const removeCashier = async (name) => {
+        setCashiers(cashiers.filter(c => c !== name));
+        await deleteCashierFromSupabase(name);
+      };
+
+      return (
+        <div className="cashier-manager">
+          <button className="manager-toggle" onClick={() => setIsOpen(!isOpen)}>
+            <Icon name="users" size={16} />
+            Gestisci Cassieri ({cashiers.length})
+            <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={16} />
+          </button>
+          
+          {isOpen && (
+            <div className="manager-panel">
+              <div className="add-cashier">
+                <input
+                  type="text"
+                  value={newCashier}
+                  onChange={(e) => setNewCashier(e.target.value)}
+                  placeholder="Nome cassiere..."
+                  onKeyPress={(e) => e.key === 'Enter' && addCashier()}
+                />
+                <button onClick={addCashier}>Aggiungi</button>
+              </div>
+              <div className="cashier-tags">
+                {cashiers.map(name => (
+                  <div key={name} className="cashier-tag">
+                    {name}
+                    <span onClick={() => removeCashier(name)} style={{cursor: 'pointer'}}>✕</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function LoginScreen({ onLogin }) {
+      const [adminPassword, setAdminPassword] = useState('');
+      const [userPassword, setUserPassword] = useState('');
+      const [adminError, setAdminError] = useState('');
+      const [userError, setUserError] = useState('');
+
+      const handleAdminLogin = () => {
+        if (adminPassword === 'GIBAUCEBAUM2') {
+          onLogin('admin');
+        } else {
+          setAdminError('Password errata');
+          setTimeout(() => setAdminError(''), 3000);
+        }
+      };
+
+      const handleUserLogin = () => {
+        if (userPassword === 'DONTSRATINGS') {
+          onLogin('employee');
+        } else {
+          setUserError('Password errata');
+          setTimeout(() => setUserError(''), 3000);
+        }
+      };
+
+      return (
+        <div className="login-screen">
+          <div className="login-container">
+            <div className="login-header">
+              <h1 className="login-logo">DONTS Reviews</h1>
+              <p className="login-subtitle">Dashboard Classifiche Recensioni</p>
+            </div>
+            
+            <div className="login-boxes">
+              {/* Admin Login */}
+              <div className="login-card admin-card">
+                <div className="login-card-icon">👑</div>
+                <h2 className="login-card-title">Admin</h2>
+                <p className="login-card-desc">Gestione completa dashboard</p>
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                  placeholder="Password Admin..."
+                  className="login-input"
+                />
+                {adminError && <div className="login-error">{adminError}</div>}
+                <button onClick={handleAdminLogin} className="login-button admin-button">
+                  Accedi come Admin
+                </button>
+              </div>
+
+              {/* User Login */}
+              <div className="login-card user-card">
+                <div className="login-card-icon">👤</div>
+                <h2 className="login-card-title">User</h2>
+                <p className="login-card-desc">Visualizza classifiche</p>
+                <input
+                  type="password"
+                  value={userPassword}
+                  onChange={(e) => setUserPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleUserLogin()}
+                  placeholder="Password User..."
+                  className="login-input"
+                />
+                {userError && <div className="login-error">{userError}</div>}
+                <button onClick={handleUserLogin} className="login-button user-button">
+                  Accedi come User
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [userRole, setUserRole] = useState(null); // null, 'admin', 'employee'
+      
+      // State
+      const [reviews, setReviews] = useState([]);
+      const [cashiers, setCashiers] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+
+      // Load data from Supabase on mount
+      React.useEffect(() => {
+        loadFromSupabase();
+      }, []);
+
+      const loadFromSupabase = async () => {
+        setIsLoading(true);
+        try {
+          // Load reviews
+          const { data: reviewsData } = await supabase
+            .from('reviews_dashboard')
+            .select('*');
+          if (reviewsData) setReviews(reviewsData);
+
+          // Load cashiers
+          const { data: cashiersData } = await supabase
+            .from('cashiers_dashboard')
+            .select('*');
+          if (cashiersData) setCashiers(cashiersData.map(c => c.name));
+
+          // Load settings
+          const { data: settingsData } = await supabase
+            .from('settings_dashboard')
+            .select('*');
+          if (settingsData) {
+            const monthSetting = settingsData.find(s => s.key === 'user_month');
+            const prizeSetting = settingsData.find(s => s.key === 'user_prize');
+            if (monthSetting?.value) setUserMonth(monthSetting.value);
+            if (prizeSetting?.value) setUserPrize(JSON.parse(prizeSetting.value));
+          }
+        } catch (error) {
+          console.error('Error loading from Supabase:', error);
+        }
+        setIsLoading(false);
+      };
+      // Save reviews to Supabase
+      const saveReviewsToSupabase = async (newReviews) => {
+        try {
+          const { error } = await supabase
+            .from('reviews_dashboard')
+            .insert(newReviews.map(r => ({
+              store: r.store || '',
+              rating: r.rating || 0,
+              text: r.text || '',
+              reviewer: r.reviewer || '',
+              date: r.date || ''
+            })));
+          if (error) console.error('Error saving reviews:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Save settings to Supabase
+      const saveSettingToSupabase = async (key, value) => {
+        try {
+          const { error } = await supabase
+            .from('settings_dashboard')
+            .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
+          if (error) console.error('Error saving setting:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Save cashier to Supabase
+      const saveCashierToSupabase = async (name) => {
+        try {
+          const { error } = await supabase
+            .from('cashiers_dashboard')
+            .insert({ name });
+          if (error) console.error('Error saving cashier:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Delete cashier from Supabase
+      const deleteCashierFromSupabase = async (name) => {
+        try {
+          const { error } = await supabase
+            .from('cashiers_dashboard')
+            .delete()
+            .eq('name', name);
+          if (error) console.error('Error deleting cashier:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Clear all reviews from Supabase
+      const clearReviewsFromSupabase = async () => {
+        try {
+          const { error } = await supabase
+            .from('reviews_dashboard')
+            .delete()
+            .neq('id', 0);
+          if (error) console.error('Error clearing reviews:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+
+      const [isDragging, setIsDragging] = useState(false);
+      const [uploadedFiles, setUploadedFiles] = useState(() => {
+        const saved = localStorage.getItem('donts_uploaded_files');
+        return saved ? JSON.parse(saved) : [];
+      });
+      const [selectedMonth, setSelectedMonth] = useState(null);
+      
+      // Mese e premio impostati da Admin per User
+      const [userMonth, setUserMonth] = useState(null);
+      const [userPrize, setUserPrize] = useState(null);
+
+      // Calcola i mesi disponibili dalle recensioni
+      const availableMonths = useMemo(() => {
+        const months = new Set();
+        reviews.forEach(r => {
+          const dateStr = r.date || '';
+          const date = parseReviewDate(dateStr);
+          const monthKey = getMonthKey(date);
+          if (monthKey) months.add(monthKey);
+        });
+        return Array.from(months).sort().reverse();
+      }, [reviews]);
+
+      // Per User: usa il mese impostato da Admin
+      React.useEffect(() => {
+        if (userRole === 'employee' && userMonth) {
+          setSelectedMonth(userMonth);
+        }
+      }, [userRole, userMonth]);
+
+      const filteredReviews = useMemo(() => {
+        if (!selectedMonth) return reviews;
+        return reviews.filter(r => {
+          const dateStr = r.date || '';
+          const date = parseReviewDate(dateStr);
+          return getMonthKey(date) === selectedMonth;
+        });
+      }, [reviews, selectedMonth]);
+
+      const handleFile = (file, storeName) => {
+        const reader = new FileReader();
+        const fileType = file.name.endsWith('.json') ? 'json' : 'csv';
+        
+        // Auto-detect store from filename (Phantom CSV or folder name)
+        let detectedStore = storeName;
+        if (!detectedStore) {
+          const fileName = file.name.toLowerCase();
+          // Check for store names
+          if (fileName.includes('trastevere')) detectedStore = 'trastevere';
+          else if (fileName.includes('istria')) detectedStore = 'istria';
+          else if (fileName.includes('ponte') || fileName.includes('milvio')) detectedStore = 'ponte';
+          else if (fileName.includes('tuscolana')) detectedStore = 'tuscolana';
+          // Check for Google Takeout location IDs
+          else detectedStore = detectStoreFromLocationId(fileName);
+        }
+        
+        reader.onload = (e) => {
+          let parsed = [];
+          
+          if (fileType === 'json') {
+            try {
+              const jsonData = JSON.parse(e.target.result);
+              parsed = parseGoogleTakeoutJSON(jsonData, file.name);
+            } catch (err) {
+              console.error('Errore parsing JSON:', err);
+              alert('Errore nel parsing del file JSON.');
+              return;
+            }
+          } else {
+            parsed = parseCSV(e.target.result);
+          }
+          
+          // Apply detected store to all reviews, or use store from each review
+          const reviewsWithStore = parsed.map(r => ({ 
+            ...r, 
+            store: detectedStore || r.store || 'unknown' 
+          }));
+          
+          // Find store name for display
+          const storeObj = STORES.find(s => s.id === detectedStore);
+          const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
+          
+          setReviews(prev => [...prev, ...reviewsWithStore]);
+          
+          // Save to Supabase (only Admin)
+          if (userRole === 'admin') {
+            saveReviewsToSupabase(reviewsWithStore);
+          }
+          setUploadedFiles(prev => [...prev, { 
+            name: file.name, 
+            store: detectedStore,
+            storeLabel: storeLabelForDisplay,
+            count: parsed.length,
+            type: fileType 
+          }]);
+        };
+        
+        reader.readAsText(file);
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const files = Array.from(e.dataTransfer.files);
+        files.forEach(file => {
+          if (file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+            handleFile(file, null);
+          }
+        });
+      };
+
+      const handleFileInput = (e, storeId) => {
+        const file = e.target.files[0];
+        if (file) {
+          handleFile(file, storeId);
+        }
+      };
+
+      const clearAllData = async () => {
+        setReviews([]);
+        setUploadedFiles([]);
+        setSelectedMonth(null);
+        await clearReviewsFromSupabase();
+      };
+
+      const stats = useMemo(() => {
+        const totalReviews = filteredReviews.length;
+        const avgRating = totalReviews > 0 
+          ? (filteredReviews.reduce((sum, r) => sum + (parseFloat(r.rating) || 0), 0) / totalReviews).toFixed(2)
+          : '0.00';
+        const positiveCount = filteredReviews.filter(r => analyzeSentiment(r.text || '', r.rating) === 'positive').length;
+        const negativeCount = filteredReviews.filter(r => analyzeSentiment(r.text || '', r.rating) === 'negative').length;
+        
+        return { totalReviews, avgRating, positiveCount, negativeCount };
+      }, [filteredReviews]);
+
+      // Calcola vincitore del mese (cassiere con più menzioni positive)
+      // REQUISITO: minimo 50 menzioni per vincere
+      const MIN_MENTIONS_TO_WIN = 50;
+      
+      const monthlyWinner = useMemo(() => {
+        if (!selectedMonth) return null;
+        
+        const cashierStats = cashiers.map(name => {
+          const mentions = [];
+          filteredReviews.forEach(review => {
+            const text = review.text || '';
+            if (text.toLowerCase().includes(name.toLowerCase())) {
+              mentions.push({
+                rating: parseFloat(review.rating) || 0,
+                sentiment: analyzeSentiment(text, parseFloat(review.rating) || 0)
+              });
+            }
+          });
+          
+          const positiveCount = mentions.filter(m => m.sentiment === 'positive').length;
+          const totalRating = mentions.reduce((sum, m) => sum + m.rating, 0);
+          const avgRating = mentions.length > 0 ? totalRating / mentions.length : 0;
+          const score = mentions.length > 0 
+            ? (avgRating * 20) + (positiveCount * 5) + (mentions.length * 2)
+            : 0;
+          
+          return { name, mentions: mentions.length, positiveCount, avgRating: avgRating.toFixed(2), score };
+        }).filter(c => c.mentions >= MIN_MENTIONS_TO_WIN).sort((a, b) => b.score - a.score);
+        
+        return cashierStats.length > 0 ? cashierStats[0] : null;
+      }, [filteredReviews, cashiers, selectedMonth]);
+
+      const currentPrize = useMemo(() => {
+        return selectedMonth ? getPrizeForMonth(selectedMonth) : null;
+      }, [selectedMonth]);
+
+      const handleLogout = () => {
+        setUserRole(null);
+      };
+
+      // Show login screen if not authenticated
+      if (!userRole) {
+        return <LoginScreen onLogin={setUserRole} />;
+      }
+
+      const isAdmin = userRole === 'admin';
+
+      return (
+        <div className="dashboard">
+          <header className="header">
+            <h1 className="logo">DONTS Reviews</h1>
+            <p className="subtitle">Dashboard Recensioni Google • Classifica Store & Cassieri</p>
+            <div className="user-info">
+              <span className="user-role">{isAdmin ? '👑 Admin' : '👤 User'}</span>
+              <button className="logout-btn" onClick={handleLogout}>Esci</button>
+            </div>
+          </header>
+          
+          {isAdmin && (
+            <div 
+              className={`upload-zone ${isDragging ? 'dragging' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+            >
+              <div style={{color: '#FF6B35', marginBottom: '1rem'}}>
+                <Icon name="upload" size={48} />
+              </div>
+              <div className="upload-title">Importa Recensioni da Google Takeout</div>
+              <div className="upload-subtitle">
+                Trascina qui il file <strong>Reviews.json</strong> dalla cartella Google Takeout, oppure seleziona per store:
+              </div>
+              
+              <div className="upload-instructions">
+                <div className="instruction-step">1. Vai su <a href="https://takeout.google.com" target="_blank" rel="noopener noreferrer">takeout.google.com</a></div>
+                <div className="instruction-step">2. Seleziona solo "Google Business Profile"</div>
+                <div className="instruction-step">3. Scarica e estrai lo ZIP</div>
+                <div className="instruction-step">4. Trova <code>Reviews.json</code> nella cartella</div>
+              </div>
+              
+              <div className="store-uploads">
+                {STORES.map(store => (
+                  <label key={store.id} className="store-upload" style={{ '--store-color': store.color }}>
+                    <input 
+                      type="file" 
+                      accept=".csv,.json" 
+                      onChange={(e) => handleFileInput(e, store.id)} 
+                    />
+                    <div className="store-name" style={{ color: store.color }}>{store.name}</div>
+                    <div className="store-hint">Carica JSON/CSV</div>
+                  </label>
+                ))}
+              </div>
+              
+              <div className="general-upload">
+                <label className="upload-button">
+                  <input 
+                    type="file" 
+                    accept=".csv,.json" 
+                    onChange={(e) => handleFileInput(e, null)} 
+                  />
+                  <Icon name="upload" size={16} />
+                  Carica file unico (tutti gli store)
+                </label>
+              </div>
+              
+              {uploadedFiles.length > 0 && (
+                <div className="uploaded-files">
+                  {uploadedFiles.map((f, i) => (
+                    <span key={i} className="uploaded-file">
+                      {f.type === 'json' ? '📋' : '📄'} {f.storeLabel || f.store}: {f.count} recensioni
+                    </span>
+                  ))}
+                  <button className="clear-data" onClick={clearAllData}>
+                    ✕ Cancella tutto
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {isAdmin && (
+            <div className="stats-grid">
+              <StatCard 
+                title="Totale Recensioni" 
+                value={stats.totalReviews}
+                icon="award"
+                color="#FF6B35"
+              />
+              <StatCard 
+                title="Rating Medio" 
+                value={stats.avgRating}
+                subtitle="su 5.00"
+                icon="star"
+                color="#FFD700"
+              />
+              <StatCard 
+                title="Recensioni Positive" 
+                value={stats.positiveCount}
+                subtitle={stats.totalReviews > 0 ? `${Math.round((stats.positiveCount/stats.totalReviews)*100)}% del totale` : ''}
+                icon="trendingUp"
+                trend="up"
+                color="#4ade80"
+              />
+              <StatCard 
+                title="Recensioni Negative" 
+                value={stats.negativeCount}
+                subtitle={stats.totalReviews > 0 ? `${Math.round((stats.negativeCount/stats.totalReviews)*100)}% del totale` : ''}
+                icon="trendingDown"
+                trend="down"
+                color="#f87171"
+              />
+            </div>
+          )}
+          
+          {isAdmin && availableMonths.length > 0 && (
+            <MonthSelector 
+              availableMonths={availableMonths}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+            />
+          )}
+          
+          {isAdmin && (
+            <AdminControls
+              selectedMonth={selectedMonth}
+              userMonth={userMonth}
+              setUserMonth={setUserMonth}
+              userPrize={userPrize}
+              setUserPrize={setUserPrize}
+              formatMonthLabel={formatMonthLabel}
+              saveSettingToSupabase={saveSettingToSupabase}
+            />
+          )}
+          
+          {!isAdmin && selectedMonth && (
+            <CurrentMonthDisplay 
+              month={formatMonthLabel(selectedMonth)}
+              prize={userPrize}
+            />
+          )}
+          
+          {selectedMonth && isAdmin && (
+            <WinnerCard 
+              winner={monthlyWinner}
+              prize={userPrize}
+              month={formatMonthLabel(selectedMonth)}
+              noWinnerMessage={!monthlyWinner}
+            />
+          )}
+          
+          {isAdmin && (
+            <CashierManager 
+              cashiers={cashiers} 
+              setCashiers={setCashiers}
+              saveCashierToSupabase={saveCashierToSupabase}
+              deleteCashierFromSupabase={deleteCashierFromSupabase}
+            />
+          )}
+          
+          <div className="rankings-container">
+            <StoreRanking stores={STORES} reviews={filteredReviews} />
+            <CashierRanking reviews={filteredReviews} cashiers={cashiers} />
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
