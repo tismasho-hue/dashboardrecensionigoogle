@@ -8,12 +8,6 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
   <style>
     * {
       margin: 0;
@@ -1079,6 +1073,16 @@
       margin-bottom: 1rem;
     }
     
+    .rules-info {
+      background: rgba(78,205,196,0.1);
+      border: 1px solid rgba(78,205,196,0.2);
+      color: #4ECDC4;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    
     .progress-bar-container {
       width: 100%;
       height: 6px;
@@ -1562,22 +1566,20 @@
       );
     }
 
-    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel, saveSettingToSupabase }) {
+    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel }) {
       const [showPrizeSelector, setShowPrizeSelector] = useState(false);
 
-      const handleSetUserMonth = async () => {
+      const handleSetUserMonth = () => {
         if (selectedMonth) {
           setUserMonth(selectedMonth);
-          await saveSettingToSupabase('user_month', selectedMonth);
           alert(`Mese impostato per User: ${formatMonthLabel(selectedMonth)}`);
         } else {
           alert('Seleziona prima un mese!');
         }
       };
 
-      const handleSetUserPrize = async (prize) => {
+      const handleSetUserPrize = (prize) => {
         setUserPrize(prize);
-        await saveSettingToSupabase('user_prize', JSON.stringify(prize));
         setShowPrizeSelector(false);
         alert(`Premio impostato per User: ${prize.name}`);
       };
@@ -1795,7 +1797,7 @@
       );
     }
 
-    function CashierRanking({ reviews, cashiers }) {
+    function CashierRanking({ reviews, cashiers, isAdmin }) {
       const [expandedCashier, setExpandedCashier] = useState(null);
       const MIN_MENTIONS = 50;
       
@@ -1850,9 +1852,15 @@
             <Icon name="users" size={24} />
             Classifica Cassieri
           </h2>
-          <div className="min-mentions-info">
-            🎯 Minimo 50 menzioni per vincere il premio
-          </div>
+          {isAdmin ? (
+            <div className="min-mentions-info">
+              🎯 Minimo 50 menzioni per vincere il premio
+            </div>
+          ) : (
+            <div className="rules-info">
+              📋 <strong>Regole:</strong> Vince il dipendente più menzionato, purché il suo store di appartenenza abbia ottenuto almeno 100 recensioni da 5 stelle nel mese.
+            </div>
+          )}
           {cashierStats.length === 0 ? (
             <div className="empty-state">
               <Icon name="alertCircle" size={32} />
@@ -1921,22 +1929,19 @@
       );
     }
 
-    function CashierManager({ cashiers, setCashiers, saveCashierToSupabase, deleteCashierFromSupabase }) {
+    function CashierManager({ cashiers, setCashiers }) {
       const [newCashier, setNewCashier] = useState('');
       const [isOpen, setIsOpen] = useState(false);
 
-      const addCashier = async () => {
+      const addCashier = () => {
         if (newCashier.trim() && !cashiers.includes(newCashier.trim())) {
-          const name = newCashier.trim();
-          setCashiers([...cashiers, name]);
-          await saveCashierToSupabase(name);
+          setCashiers([...cashiers, newCashier.trim()]);
           setNewCashier('');
         }
       };
 
-      const removeCashier = async (name) => {
+      const removeCashier = (name) => {
         setCashiers(cashiers.filter(c => c !== name));
-        await deleteCashierFromSupabase(name);
       };
 
       return (
@@ -2052,115 +2057,16 @@
     function App() {
       const [userRole, setUserRole] = useState(null); // null, 'admin', 'employee'
       
-      // State
-      const [reviews, setReviews] = useState([]);
-      const [cashiers, setCashiers] = useState([]);
-      const [isLoading, setIsLoading] = useState(true);
-
-      // Load data from Supabase on mount
-      React.useEffect(() => {
-        loadFromSupabase();
-      }, []);
-
-      const loadFromSupabase = async () => {
-        setIsLoading(true);
-        try {
-          // Load reviews
-          const { data: reviewsData } = await supabase
-            .from('reviews_dashboard')
-            .select('*');
-          if (reviewsData) setReviews(reviewsData);
-
-          // Load cashiers
-          const { data: cashiersData } = await supabase
-            .from('cashiers_dashboard')
-            .select('*');
-          if (cashiersData) setCashiers(cashiersData.map(c => c.name));
-
-          // Load settings
-          const { data: settingsData } = await supabase
-            .from('settings_dashboard')
-            .select('*');
-          if (settingsData) {
-            const monthSetting = settingsData.find(s => s.key === 'user_month');
-            const prizeSetting = settingsData.find(s => s.key === 'user_prize');
-            if (monthSetting?.value) setUserMonth(monthSetting.value);
-            if (prizeSetting?.value) setUserPrize(JSON.parse(prizeSetting.value));
-          }
-        } catch (error) {
-          console.error('Error loading from Supabase:', error);
-        }
-        setIsLoading(false);
-      };
-      // Save reviews to Supabase
-      const saveReviewsToSupabase = async (newReviews) => {
-        try {
-          const { error } = await supabase
-            .from('reviews_dashboard')
-            .insert(newReviews.map(r => ({
-              store: r.store || '',
-              rating: r.rating || 0,
-              text: r.text || '',
-              reviewer: r.reviewer || '',
-              date: r.date || ''
-            })));
-          if (error) console.error('Error saving reviews:', error);
-        } catch (err) {
-          console.error('Error:', err);
-        }
-      };
-
-      // Save settings to Supabase
-      const saveSettingToSupabase = async (key, value) => {
-        try {
-          const { error } = await supabase
-            .from('settings_dashboard')
-            .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
-          if (error) console.error('Error saving setting:', error);
-        } catch (err) {
-          console.error('Error:', err);
-        }
-      };
-
-      // Save cashier to Supabase
-      const saveCashierToSupabase = async (name) => {
-        try {
-          const { error } = await supabase
-            .from('cashiers_dashboard')
-            .insert({ name });
-          if (error) console.error('Error saving cashier:', error);
-        } catch (err) {
-          console.error('Error:', err);
-        }
-      };
-
-      // Delete cashier from Supabase
-      const deleteCashierFromSupabase = async (name) => {
-        try {
-          const { error } = await supabase
-            .from('cashiers_dashboard')
-            .delete()
-            .eq('name', name);
-          if (error) console.error('Error deleting cashier:', error);
-        } catch (err) {
-          console.error('Error:', err);
-        }
-      };
-
-      // Clear all reviews from Supabase
-      const clearReviewsFromSupabase = async () => {
-        try {
-          const { error } = await supabase
-            .from('reviews_dashboard')
-            .delete()
-            .neq('id', 0);
-          if (error) console.error('Error clearing reviews:', error);
-        } catch (err) {
-          console.error('Error:', err);
-        }
-      };
-
-
+      // Load reviews from localStorage on mount
+      const [reviews, setReviews] = useState(() => {
+        const saved = localStorage.getItem('donts_reviews');
+        return saved ? JSON.parse(saved) : [];
+      });
+      
+      const [cashiers, setCashiers] = useState(() => {
+        const saved = localStorage.getItem('donts_cashiers');
+        return saved ? JSON.parse(saved) : CASHIERS;
+      });
       const [isDragging, setIsDragging] = useState(false);
       const [uploadedFiles, setUploadedFiles] = useState(() => {
         const saved = localStorage.getItem('donts_uploaded_files');
@@ -2169,8 +2075,28 @@
       const [selectedMonth, setSelectedMonth] = useState(null);
       
       // Mese e premio impostati da Admin per User
-      const [userMonth, setUserMonth] = useState(null);
-      const [userPrize, setUserPrize] = useState(null);
+      const [userMonth, setUserMonth] = useState(() => {
+        const saved = localStorage.getItem('donts_user_month');
+        return saved || null;
+      });
+      
+      const [userPrize, setUserPrize] = useState(() => {
+        const saved = localStorage.getItem('donts_user_prize');
+        return saved ? JSON.parse(saved) : null;
+      });
+
+      // Salva userMonth e userPrize in localStorage
+      React.useEffect(() => {
+        if (userMonth) {
+          localStorage.setItem('donts_user_month', userMonth);
+        }
+      }, [userMonth]);
+
+      React.useEffect(() => {
+        if (userPrize) {
+          localStorage.setItem('donts_user_prize', JSON.stringify(userPrize));
+        }
+      }, [userPrize]);
 
       // Calcola i mesi disponibili dalle recensioni
       const availableMonths = useMemo(() => {
@@ -2190,6 +2116,21 @@
           setSelectedMonth(userMonth);
         }
       }, [userRole, userMonth]);
+
+      // Save reviews to localStorage whenever they change
+      React.useEffect(() => {
+        localStorage.setItem('donts_reviews', JSON.stringify(reviews));
+      }, [reviews]);
+
+      // Save cashiers to localStorage whenever they change
+      React.useEffect(() => {
+        localStorage.setItem('donts_cashiers', JSON.stringify(cashiers));
+      }, [cashiers]);
+
+      // Save uploaded files info to localStorage
+      React.useEffect(() => {
+        localStorage.setItem('donts_uploaded_files', JSON.stringify(uploadedFiles));
+      }, [uploadedFiles]);
 
       const filteredReviews = useMemo(() => {
         if (!selectedMonth) return reviews;
@@ -2244,11 +2185,6 @@
           const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
           
           setReviews(prev => [...prev, ...reviewsWithStore]);
-          
-          // Save to Supabase (only Admin)
-          if (userRole === 'admin') {
-            saveReviewsToSupabase(reviewsWithStore);
-          }
           setUploadedFiles(prev => [...prev, { 
             name: file.name, 
             store: detectedStore,
@@ -2279,11 +2215,12 @@
         }
       };
 
-      const clearAllData = async () => {
+      const clearAllData = () => {
         setReviews([]);
         setUploadedFiles([]);
         setSelectedMonth(null);
-        await clearReviewsFromSupabase();
+        localStorage.removeItem('donts_reviews');
+        localStorage.removeItem('donts_uploaded_files');
       };
 
       const stats = useMemo(() => {
@@ -2468,7 +2405,6 @@
               userPrize={userPrize}
               setUserPrize={setUserPrize}
               formatMonthLabel={formatMonthLabel}
-              saveSettingToSupabase={saveSettingToSupabase}
             />
           )}
           
@@ -2489,17 +2425,12 @@
           )}
           
           {isAdmin && (
-            <CashierManager 
-              cashiers={cashiers} 
-              setCashiers={setCashiers}
-              saveCashierToSupabase={saveCashierToSupabase}
-              deleteCashierFromSupabase={deleteCashierFromSupabase}
-            />
+            <CashierManager cashiers={cashiers} setCashiers={setCashiers} />
           )}
           
           <div className="rankings-container">
             <StoreRanking stores={STORES} reviews={filteredReviews} />
-            <CashierRanking reviews={filteredReviews} cashiers={cashiers} />
+            <CashierRanking reviews={filteredReviews} cashiers={cashiers} isAdmin={isAdmin} />
           </div>
         </div>
       );
