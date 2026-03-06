@@ -8,6 +8,12 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
   <style>
     * {
       margin: 0;
@@ -604,8 +610,20 @@
     
     .admin-controls-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 1.5rem;
+    }
+    
+    @media (max-width: 1024px) {
+      .admin-controls-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .admin-controls-row {
+        grid-template-columns: 1fr;
+      }
     }
     
     .admin-control-item {
@@ -736,6 +754,41 @@
     .uploaded-summary {
       color: #4ade80;
       font-weight: 500;
+    }
+    
+    .restore-backup {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    
+    .restore-btn {
+      background: linear-gradient(135deg, #4ECDC4 0%, #44a08d 100%);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .restore-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(78,205,196,0.3);
+    }
+    
+    .control-btn.secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #a1a1aa;
+      margin-top: 0.5rem;
+    }
+    
+    .control-btn.secondary:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.3);
     }
 
     .winner-card {
@@ -1559,34 +1612,8 @@
     }
 
     function WinnerCard({ winner, prize, month, noWinnerMessage }) {
-      if (noWinnerMessage) {
-        return (
-          <div className="winner-card no-winner">
-            <div className="winner-header">
-              <span className="winner-trophy">🎯</span>
-              <div className="winner-title">
-                <h3>Nessun vincitore {month}</h3>
-                <p>Servono almeno 50 menzioni per vincere!</p>
-              </div>
-            </div>
-            <div className="winner-content">
-              <div className="winner-name">Traguardo non raggiunto</div>
-              <div className="winner-stats">
-                Nessun cassiere ha raggiunto le 50 menzioni questo mese
-              </div>
-            </div>
-            <div className="winner-prize pending">
-              <span className="prize-emoji">{prize?.emoji || '🎁'}</span>
-              <div className="prize-info">
-                <span className="prize-label">Premio in palio</span>
-                <span className="prize-name">{prize?.name || 'Premio'}</span>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      
-      if (!winner || !prize) return null;
+      // Non mostrare nulla se non c'è vincitore
+      if (noWinnerMessage || !winner || !prize) return null;
       
       return (
         <div className="winner-card">
@@ -1600,7 +1627,7 @@
           <div className="winner-content">
             <div className="winner-name">{winner.name}</div>
             <div className="winner-stats">
-              {winner.mentions} menzioni • {winner.positiveCount} positive • ⭐ {winner.avgRating}
+              {winner.isManual ? 'Vincitore impostato manualmente' : `${winner.mentions} menzioni • ${winner.positiveCount} positive • ⭐ ${winner.avgRating}`}
             </div>
           </div>
           <div className="winner-prize">
@@ -1614,9 +1641,10 @@
       );
     }
 
-    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel, saveSettingToSupabase }) {
+    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, userWinner, setUserWinner, formatMonthLabel, saveSettingToSupabase }) {
       const [showPrizeSelector, setShowPrizeSelector] = useState(false);
       const [customPrize, setCustomPrize] = useState('');
+      const [customWinner, setCustomWinner] = useState('');
 
       const handleSetUserMonth = async () => {
         if (selectedMonth) {
@@ -1644,6 +1672,22 @@
           setShowPrizeSelector(false);
           alert(`Premio personalizzato impostato: ${prize.name}`);
         }
+      };
+
+      const handleSetCustomWinner = async () => {
+        if (customWinner.trim()) {
+          const winner = { name: customWinner.trim(), mentions: '-', positiveCount: '-', avgRating: '-', isManual: true };
+          setUserWinner(winner);
+          await saveSettingToSupabase('user_winner', JSON.stringify(winner));
+          setCustomWinner('');
+          alert(`Vincitore impostato: ${winner.name}`);
+        }
+      };
+
+      const handleClearWinner = async () => {
+        setUserWinner(null);
+        await saveSettingToSupabase('user_winner', null);
+        alert('Vincitore rimosso - verrà calcolato automaticamente');
       };
 
       return (
@@ -1690,6 +1734,26 @@
                     </button>
                   ))}
                 </div>
+              )}
+            </div>
+            
+            <div className="admin-control-item">
+              <span className="control-label">Vincitore del mese:</span>
+              <span className="control-value">{userWinner ? `🏆 ${userWinner.name}` : 'Automatico'}</span>
+              <div className="custom-prize-input">
+                <input 
+                  type="text"
+                  value={customWinner}
+                  onChange={(e) => setCustomWinner(e.target.value)}
+                  placeholder="Nome vincitore..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleSetCustomWinner()}
+                />
+                <button onClick={handleSetCustomWinner}>Imposta</button>
+              </div>
+              {userWinner && (
+                <button className="control-btn secondary" onClick={handleClearWinner}>
+                  ↩️ Torna a calcolo automatico
+                </button>
               )}
             </div>
           </div>
@@ -1925,11 +1989,7 @@
             <Icon name="users" size={24} />
             Classifica Cassieri
           </h2>
-          {isAdmin ? (
-            <div className="min-mentions-info">
-              🎯 Minimo 50 menzioni per vincere il premio
-            </div>
-          ) : (
+          {!isAdmin && (
             <div className="rules-info">
               📋 <strong>Regole:</strong> Vince il dipendente più menzionato, purché il suo store di appartenenza abbia ottenuto almeno 100 recensioni da 5 stelle nel mese.
             </div>
@@ -2130,46 +2190,145 @@
     function App() {
       const [userRole, setUserRole] = useState(null); // null, 'admin', 'employee'
       
-      // Load reviews from localStorage on mount
-      const [reviews, setReviews] = useState(() => {
-        const saved = localStorage.getItem('donts_reviews');
-        return saved ? JSON.parse(saved) : [];
-      });
-      
-      const [cashiers, setCashiers] = useState(() => {
-        const saved = localStorage.getItem('donts_cashiers');
-        return saved ? JSON.parse(saved) : CASHIERS;
-      });
+      // State
+      const [reviews, setReviews] = useState([]);
+      const [cashiers, setCashiers] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
       const [isDragging, setIsDragging] = useState(false);
-      const [uploadedFiles, setUploadedFiles] = useState(() => {
-        const saved = localStorage.getItem('donts_uploaded_files');
-        return saved ? JSON.parse(saved) : [];
-      });
+      const [uploadedFiles, setUploadedFiles] = useState([]);
       const [selectedMonth, setSelectedMonth] = useState(null);
       
-      // Mese e premio impostati da Admin per User
-      const [userMonth, setUserMonth] = useState(() => {
-        const saved = localStorage.getItem('donts_user_month');
-        return saved || null;
-      });
+      // Mese, premio e vincitore impostati da Admin per User
+      const [userMonth, setUserMonth] = useState(null);
+      const [userPrize, setUserPrize] = useState(null);
+      const [userWinner, setUserWinner] = useState(null);
       
-      const [userPrize, setUserPrize] = useState(() => {
-        const saved = localStorage.getItem('donts_user_prize');
-        return saved ? JSON.parse(saved) : null;
-      });
+      // Backup recensioni per funzione "Annulla"
+      const [reviewsBackup, setReviewsBackup] = useState(null);
 
-      // Salva userMonth e userPrize in localStorage
+      // Load data from Supabase on mount
       React.useEffect(() => {
-        if (userMonth) {
-          localStorage.setItem('donts_user_month', userMonth);
-        }
-      }, [userMonth]);
+        loadFromSupabase();
+      }, []);
 
-      React.useEffect(() => {
-        if (userPrize) {
-          localStorage.setItem('donts_user_prize', JSON.stringify(userPrize));
+      const loadFromSupabase = async () => {
+        setIsLoading(true);
+        try {
+          // Load reviews
+          const { data: reviewsData } = await supabase
+            .from('reviews_dashboard')
+            .select('*');
+          if (reviewsData) setReviews(reviewsData);
+
+          // Load cashiers
+          const { data: cashiersData } = await supabase
+            .from('cashiers_dashboard')
+            .select('*');
+          if (cashiersData && cashiersData.length > 0) {
+            setCashiers(cashiersData.map(c => c.name));
+          }
+
+          // Load settings
+          const { data: settingsData } = await supabase
+            .from('settings_dashboard')
+            .select('*');
+          if (settingsData) {
+            const monthSetting = settingsData.find(s => s.key === 'user_month');
+            const prizeSetting = settingsData.find(s => s.key === 'user_prize');
+            const winnerSetting = settingsData.find(s => s.key === 'user_winner');
+            if (monthSetting?.value) setUserMonth(monthSetting.value);
+            if (prizeSetting?.value) {
+              try { setUserPrize(JSON.parse(prizeSetting.value)); } catch(e) {}
+            }
+            if (winnerSetting?.value) {
+              try { setUserWinner(JSON.parse(winnerSetting.value)); } catch(e) {}
+            }
+          }
+        } catch (error) {
+          console.error('Error loading from Supabase:', error);
         }
-      }, [userPrize]);
+        setIsLoading(false);
+      };
+
+      // Save setting to Supabase
+      const saveSettingToSupabase = async (key, value) => {
+        try {
+          const { error } = await supabase
+            .from('settings_dashboard')
+            .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
+          if (error) console.error('Error saving setting:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Save reviews to Supabase
+      const saveReviewsToSupabase = async (newReviews) => {
+        try {
+          const { error } = await supabase
+            .from('reviews_dashboard')
+            .insert(newReviews.map(r => ({
+              store: r.store || '',
+              rating: r.rating || 0,
+              text: r.text || '',
+              reviewer: r.reviewer || '',
+              date: r.date || ''
+            })));
+          if (error) console.error('Error saving reviews:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Save cashier to Supabase
+      const saveCashierToSupabase = async (name) => {
+        try {
+          const { error } = await supabase
+            .from('cashiers_dashboard')
+            .insert({ name });
+          if (error) console.error('Error saving cashier:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Delete cashier from Supabase
+      const deleteCashierFromSupabase = async (name) => {
+        try {
+          const { error } = await supabase
+            .from('cashiers_dashboard')
+            .delete()
+            .eq('name', name);
+          if (error) console.error('Error deleting cashier:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Clear all reviews from Supabase
+      const clearReviewsFromSupabase = async () => {
+        try {
+          const { error } = await supabase
+            .from('reviews_dashboard')
+            .delete()
+            .neq('id', 0);
+          if (error) console.error('Error clearing reviews:', error);
+        } catch (err) {
+          console.error('Error:', err);
+        }
+      };
+
+      // Restore reviews from backup
+      const restoreReviewsFromBackup = async () => {
+        if (reviewsBackup && reviewsBackup.length > 0) {
+          setReviews(reviewsBackup);
+          await saveReviewsToSupabase(reviewsBackup);
+          setReviewsBackup(null);
+          alert('Recensioni ripristinate!');
+        } else {
+          alert('Nessun backup disponibile');
+        }
+      };
 
       // Calcola i mesi disponibili dalle recensioni
       const availableMonths = useMemo(() => {
@@ -2288,12 +2447,15 @@
         }
       };
 
-      const clearAllData = () => {
+      const clearAllData = async () => {
+        // Salva backup prima di cancellare
+        if (reviews.length > 0) {
+          setReviewsBackup([...reviews]);
+        }
         setReviews([]);
         setUploadedFiles([]);
         setSelectedMonth(null);
-        localStorage.removeItem('donts_reviews');
-        localStorage.removeItem('donts_uploaded_files');
+        await clearReviewsFromSupabase();
       };
 
       const stats = useMemo(() => {
@@ -2423,6 +2585,14 @@
                   </button>
                 </div>
               )}
+              
+              {reviewsBackup && reviewsBackup.length > 0 && (
+                <div className="restore-backup">
+                  <button className="restore-btn" onClick={restoreReviewsFromBackup}>
+                    ↩️ Annulla cancellazione ({reviewsBackup.length} recensioni)
+                  </button>
+                </div>
+              )}
             </div>
           )}
           
@@ -2475,7 +2645,10 @@
               setUserMonth={setUserMonth}
               userPrize={userPrize}
               setUserPrize={setUserPrize}
+              userWinner={userWinner}
+              setUserWinner={setUserWinner}
               formatMonthLabel={formatMonthLabel}
+              saveSettingToSupabase={saveSettingToSupabase}
             />
           )}
           
@@ -2488,10 +2661,19 @@
           
           {selectedMonth && isAdmin && (
             <WinnerCard 
-              winner={monthlyWinner}
+              winner={userWinner || monthlyWinner}
               prize={userPrize}
               month={formatMonthLabel(selectedMonth)}
-              noWinnerMessage={!monthlyWinner}
+              noWinnerMessage={!userWinner && !monthlyWinner}
+            />
+          )}
+          
+          {selectedMonth && !isAdmin && userWinner && userPrize && (
+            <WinnerCard 
+              winner={userWinner}
+              prize={userPrize}
+              month={formatMonthLabel(selectedMonth)}
+              noWinnerMessage={false}
             />
           )}
           
