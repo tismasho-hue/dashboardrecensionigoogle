@@ -1626,9 +1626,11 @@
           </div>
           <div className="winner-content">
             <div className="winner-name">{winner.name}</div>
-            <div className="winner-stats">
-              {winner.isManual ? 'Vincitore impostato manualmente' : `${winner.mentions} menzioni • ${winner.positiveCount} positive • ⭐ ${winner.avgRating}`}
-            </div>
+            {!winner.isManual && (
+              <div className="winner-stats">
+                {winner.mentions} menzioni • {winner.positiveCount} positive • ⭐ {winner.avgRating}
+              </div>
+            )}
           </div>
           <div className="winner-prize">
             <span className="prize-emoji">{prize.emoji}</span>
