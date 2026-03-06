@@ -689,6 +689,54 @@
     .prize-option-name {
       font-weight: 500;
     }
+    
+    .custom-prize-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .custom-prize-input input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+    }
+    
+    .custom-prize-input input::placeholder {
+      color: #71717a;
+    }
+    
+    .custom-prize-input button {
+      background: #4ECDC4;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .custom-prize-input button:hover {
+      background: #6ed7d0;
+    }
+    
+    .prize-divider {
+      text-align: center;
+      color: #71717a;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .uploaded-summary {
+      color: #4ade80;
+      font-weight: 500;
+    }
 
     .winner-card {
       background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,107,53,0.1) 100%);
@@ -1566,22 +1614,36 @@
       );
     }
 
-    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel }) {
+    function AdminControls({ selectedMonth, userMonth, setUserMonth, userPrize, setUserPrize, formatMonthLabel, saveSettingToSupabase }) {
       const [showPrizeSelector, setShowPrizeSelector] = useState(false);
+      const [customPrize, setCustomPrize] = useState('');
 
-      const handleSetUserMonth = () => {
+      const handleSetUserMonth = async () => {
         if (selectedMonth) {
           setUserMonth(selectedMonth);
+          await saveSettingToSupabase('user_month', selectedMonth);
           alert(`Mese impostato per User: ${formatMonthLabel(selectedMonth)}`);
         } else {
           alert('Seleziona prima un mese!');
         }
       };
 
-      const handleSetUserPrize = (prize) => {
+      const handleSetUserPrize = async (prize) => {
         setUserPrize(prize);
+        await saveSettingToSupabase('user_prize', JSON.stringify(prize));
         setShowPrizeSelector(false);
         alert(`Premio impostato per User: ${prize.name}`);
+      };
+
+      const handleSetCustomPrize = async () => {
+        if (customPrize.trim()) {
+          const prize = { id: 'custom', name: customPrize.trim(), emoji: '🎁' };
+          setUserPrize(prize);
+          await saveSettingToSupabase('user_prize', JSON.stringify(prize));
+          setCustomPrize('');
+          setShowPrizeSelector(false);
+          alert(`Premio personalizzato impostato: ${prize.name}`);
+        }
       };
 
       return (
@@ -1606,6 +1668,17 @@
               
               {showPrizeSelector && (
                 <div className="prize-selector">
+                  <div className="custom-prize-input">
+                    <input 
+                      type="text"
+                      value={customPrize}
+                      onChange={(e) => setCustomPrize(e.target.value)}
+                      placeholder="Scrivi premio personalizzato..."
+                      onKeyPress={(e) => e.key === 'Enter' && handleSetCustomPrize()}
+                    />
+                    <button onClick={handleSetCustomPrize}>Imposta</button>
+                  </div>
+                  <div className="prize-divider">oppure scegli:</div>
                   {PRIZES.map(prize => (
                     <button 
                       key={prize.id} 
@@ -2342,11 +2415,9 @@
               
               {uploadedFiles.length > 0 && (
                 <div className="uploaded-files">
-                  {uploadedFiles.map((f, i) => (
-                    <span key={i} className="uploaded-file">
-                      {f.type === 'json' ? '📋' : '📄'} {f.storeLabel || f.store}: {f.count} recensioni
-                    </span>
-                  ))}
+                  <span className="uploaded-summary">
+                    ✅ {uploadedFiles.length} file caricati • {uploadedFiles.reduce((sum, f) => sum + f.count, 0)} recensioni totali
+                  </span>
                   <button className="clear-data" onClick={clearAllData}>
                     ✕ Cancella tutto
                   </button>
