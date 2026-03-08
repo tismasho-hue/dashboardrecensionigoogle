@@ -2216,12 +2216,20 @@
       const loadFromSupabase = async () => {
         setIsLoading(true);
         try {
-          // Load reviews (limite 10000 per caricare tutte)
-          const { data: reviewsData } = await supabase
-            .from('reviews_dashboard')
-            .select('*')
-            .limit(10000);
-          if (reviewsData) setReviews(reviewsData);
+          // Load reviews in 4 blocchi (fino a 4000 recensioni)
+          const [batch1, batch2, batch3, batch4] = await Promise.all([
+            supabase.from('reviews_dashboard').select('*').range(0, 999),
+            supabase.from('reviews_dashboard').select('*').range(1000, 1999),
+            supabase.from('reviews_dashboard').select('*').range(2000, 2999),
+            supabase.from('reviews_dashboard').select('*').range(3000, 3999)
+          ]);
+          
+          let allReviews = [];
+          if (batch1.data) allReviews = [...allReviews, ...batch1.data];
+          if (batch2.data) allReviews = [...allReviews, ...batch2.data];
+          if (batch3.data) allReviews = [...allReviews, ...batch3.data];
+          if (batch4.data) allReviews = [...allReviews, ...batch4.data];
+          if (allReviews.length > 0) setReviews(allReviews);
 
           // Load cashiers
           const { data: cashiersData } = await supabase
