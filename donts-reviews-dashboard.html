@@ -2262,11 +2262,18 @@
       const loadFromSupabase = async () => {
         setIsLoading(true);
         try {
-          // Load reviews
-          const { data: reviewsData } = await supabaseClient
+          // Load reviews (limite aumentato a 10000)
+          const { data: reviewsData, error: reviewsError } = await supabaseClient
             .from('reviews_dashboard')
-            .select('*');
-          if (reviewsData) setReviews(reviewsData);
+            .select('*')
+            .limit(10000);
+          
+          if (reviewsError) {
+            console.error('Error loading reviews:', reviewsError);
+          } else if (reviewsData) {
+            setReviews(reviewsData);
+            console.log('Loaded reviews:', reviewsData.length);
+          }
 
           // Load cashiers
           const { data: cashiersData } = await supabaseClient
