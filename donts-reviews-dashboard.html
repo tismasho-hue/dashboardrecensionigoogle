@@ -2216,30 +2216,12 @@
       const loadFromSupabase = async () => {
         setIsLoading(true);
         try {
-          // Load ALL reviews con paginazione (Supabase ha limite 1000 per query)
-          let allReviews = [];
-          let page = 0;
-          const pageSize = 1000;
-          let hasMore = true;
-          
-          while (hasMore) {
-            const { data: reviewsData } = await supabase
-              .from('reviews_dashboard')
-              .select('*')
-              .range(page * pageSize, (page + 1) * pageSize - 1);
-            
-            if (reviewsData && reviewsData.length > 0) {
-              allReviews = [...allReviews, ...reviewsData];
-              page++;
-              if (reviewsData.length < pageSize) {
-                hasMore = false;
-              }
-            } else {
-              hasMore = false;
-            }
-          }
-          
-          if (allReviews.length > 0) setReviews(allReviews);
+          // Load reviews (limite 10000 per caricare tutte)
+          const { data: reviewsData } = await supabase
+            .from('reviews_dashboard')
+            .select('*')
+            .limit(10000);
+          if (reviewsData) setReviews(reviewsData);
 
           // Load cashiers
           const { data: cashiersData } = await supabase
