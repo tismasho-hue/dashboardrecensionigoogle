@@ -1603,22 +1603,35 @@
     }
     
     function initReactApp() {
-      // Crea script Babel con il codice React
-      var babelScript = document.createElement('script');
-      babelScript.type = 'text/babel';
-      babelScript.textContent = document.getElementById('react-code').textContent;
-      document.body.appendChild(babelScript);
-      
-      // Forza Babel a processare
-      if (window.Babel) {
-        window.Babel.transformScriptTags();
+      try {
+        // Prendi il codice React
+        var reactCode = document.getElementById('react-code').textContent;
+        
+        // Compila con Babel
+        var compiledCode = window.Babel.transform(reactCode, {
+          presets: ['react']
+        }).code;
+        
+        // Esegui il codice compilato
+        var script = document.createElement('script');
+        script.textContent = compiledCode;
+        document.body.appendChild(script);
+        
+        // Mostra dashboard
+        setTimeout(function() {
+          document.getElementById('loading-screen').classList.remove('show');
+          document.getElementById('root').classList.add('show');
+        }, 300);
+        
+      } catch(e) {
+        console.error('Errore React:', e);
+        document.getElementById('loading-screen').innerHTML = 
+          '<div style="color:#f87171; padding: 2rem; text-align: center;">' +
+          '<p style="margin-bottom: 1rem;">Errore caricamento dashboard</p>' +
+          '<p style="font-size: 0.8rem; color: #888;">' + e.message + '</p>' +
+          '<button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #FF6B35; border: none; border-radius: 8px; color: white; cursor: pointer;">Ricarica</button>' +
+          '</div>';
       }
-      
-      // Mostra dashboard dopo un attimo
-      setTimeout(function() {
-        document.getElementById('loading-screen').classList.remove('show');
-        document.getElementById('root').classList.add('show');
-      }, 500);
     }
   </script>
   
