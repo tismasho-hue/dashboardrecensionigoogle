@@ -2,9 +2,18 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DONTS Reviews Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
   <style>
     * {
       margin: 0;
@@ -12,120 +21,12 @@
       box-sizing: border-box;
     }
     
-    html, body {
-      height: 100%;
-      overflow-x: hidden;
-    }
-    
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
       min-height: 100vh;
-      min-height: -webkit-fill-available;
       color: #e4e4e7;
     }
-    
-    /* LOGIN HTML PURO - appare subito senza React */
-    #html-login {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    
-    #html-login.hidden { display: none; }
-    
-    .html-login-box {
-      text-align: center;
-      width: 100%;
-      max-width: 350px;
-    }
-    
-    .html-login-logo {
-      font-size: 2.2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7C59F 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.3rem;
-    }
-    
-    .html-login-sub {
-      color: #71717a;
-      margin-bottom: 2rem;
-    }
-    
-    .html-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .html-card h3 {
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-    
-    .html-card input {
-      width: 100%;
-      padding: 0.9rem;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px;
-      background: rgba(0,0,0,0.3);
-      color: white;
-      font-size: 16px;
-      margin-bottom: 0.8rem;
-      -webkit-appearance: none;
-    }
-    
-    .html-card input:focus {
-      outline: none;
-      border-color: #FF6B35;
-    }
-    
-    .html-card button {
-      width: 100%;
-      padding: 0.9rem;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    
-    .btn-orange { background: linear-gradient(135deg, #FF6B35, #ff8c5a); color: white; }
-    .btn-teal { background: linear-gradient(135deg, #4ECDC4, #6ee7df); color: #0f0f23; }
-    
-    .html-error { color: #f87171; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
-    .html-error.show { display: block; }
-    
-    #loading-screen {
-      min-height: 100vh;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    #loading-screen.show { display: flex; }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,107,53,0.3);
-      border-top-color: #FF6B35;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    #root { display: none; }
-    #root.show { display: block; }
-    
-    /* React dashboard styles */
     
     .dashboard {
       max-width: 1400px;
@@ -135,18 +36,11 @@
     
     .login-screen {
       min-height: 100vh;
-      min-height: -webkit-fill-available;
       display: flex;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
       padding: 2rem;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      overflow-y: auto;
     }
     
     .login-container {
@@ -288,39 +182,6 @@
       justify-content: center;
       gap: 1rem;
       margin-top: 1rem;
-    }
-    
-    .save-indicator {
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      animation: fadeIn 0.3s ease;
-    }
-    
-    .save-indicator.saving {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-    }
-    
-    .save-indicator.saved {
-      background: rgba(74, 222, 128, 0.2);
-      color: #4ade80;
-    }
-    
-    .save-indicator.error {
-      background: rgba(248, 113, 113, 0.2);
-      color: #f87171;
-    }
-    
-    .save-indicator.duplicate {
-      background: rgba(251, 191, 36, 0.2);
-      color: #fbbf24;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     .user-role {
@@ -1509,141 +1370,9 @@
   </style>
 </head>
 <body>
-  <!-- LOGIN HTML PURO - funziona subito senza React -->
-  <div id="html-login">
-    <div class="html-login-box">
-      <h1 class="html-login-logo">DONTS Reviews</h1>
-      <p class="html-login-sub">Dashboard Classifiche Recensioni</p>
-      
-      <div class="html-card">
-        <h3>👑 Admin</h3>
-        <input type="password" id="admin-pwd" placeholder="Password Admin..." autocomplete="off">
-        <button class="btn-orange" onclick="loginAdmin()">Accedi Admin</button>
-        <p class="html-error" id="admin-err">Password errata</p>
-      </div>
-      
-      <div class="html-card">
-        <h3>👤 User</h3>
-        <input type="password" id="user-pwd" placeholder="Password User..." autocomplete="off">
-        <button class="btn-teal" onclick="loginUser()">Accedi User</button>
-        <p class="html-error" id="user-err">Password errata</p>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Loading screen mentre carica React -->
-  <div id="loading-screen">
-    <div class="spinner"></div>
-    <div>Caricamento dashboard...</div>
-  </div>
-  
-  <!-- React dashboard -->
   <div id="root"></div>
   
-  <script>
-    var userRole = null;
-    
-    function loginAdmin() {
-      var pwd = document.getElementById('admin-pwd').value;
-      if (pwd === 'GIBAUCEBAUM2') {
-        userRole = 'admin';
-        startLoadingReact();
-      } else {
-        document.getElementById('admin-err').classList.add('show');
-        setTimeout(function() { document.getElementById('admin-err').classList.remove('show'); }, 2000);
-      }
-    }
-    
-    function loginUser() {
-      var pwd = document.getElementById('user-pwd').value;
-      if (pwd === 'DONTSRATINGS') {
-        userRole = 'employee';
-        startLoadingReact();
-      } else {
-        document.getElementById('user-err').classList.add('show');
-        setTimeout(function() { document.getElementById('user-err').classList.remove('show'); }, 2000);
-      }
-    }
-    
-    // Enter key support
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('admin-pwd').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') loginAdmin();
-      });
-      document.getElementById('user-pwd').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') loginUser();
-      });
-    });
-    
-    function startLoadingReact() {
-      document.getElementById('html-login').classList.add('hidden');
-      document.getElementById('loading-screen').classList.add('show');
-      
-      // Carica librerie React e Supabase
-      loadScript('https://unpkg.com/react@18/umd/react.production.min.js', function() {
-        loadScript('https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', function() {
-          loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2', function() {
-            loadScript('https://unpkg.com/@babel/standalone/babel.min.js', function() {
-              // Tutte le librerie caricate, avvia React
-              initReactApp();
-            });
-          });
-        });
-      });
-    }
-    
-    function loadScript(src, callback) {
-      var script = document.createElement('script');
-      script.src = src;
-      script.onload = callback;
-      script.onerror = function() {
-        document.getElementById('loading-screen').innerHTML = '<div style="color:#f87171;">Errore caricamento. Ricarica la pagina.</div>';
-      };
-      document.head.appendChild(script);
-    }
-    
-    function initReactApp() {
-      try {
-        // Prendi il codice React
-        var reactCode = document.getElementById('react-code').textContent;
-        
-        // Compila con Babel
-        var compiledCode = window.Babel.transform(reactCode, {
-          presets: ['react']
-        }).code;
-        
-        // Esegui il codice compilato
-        var script = document.createElement('script');
-        script.textContent = compiledCode;
-        document.body.appendChild(script);
-        
-        // Mostra dashboard
-        setTimeout(function() {
-          document.getElementById('loading-screen').classList.remove('show');
-          document.getElementById('root').classList.add('show');
-        }, 300);
-        
-      } catch(e) {
-        console.error('Errore React:', e);
-        document.getElementById('loading-screen').innerHTML = 
-          '<div style="color:#f87171; padding: 2rem; text-align: center;">' +
-          '<p style="margin-bottom: 1rem;">Errore caricamento dashboard</p>' +
-          '<p style="font-size: 0.8rem; color: #888;">' + e.message + '</p>' +
-          '<button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #FF6B35; border: none; border-radius: 8px; color: white; cursor: pointer;">Ricarica</button>' +
-          '</div>';
-      }
-    }
-  </script>
-  
-  <script type="text/babel" id="react-code">
-    // Inizializza Supabase
-    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Ruolo utente passato dal login HTML
-    const initialUserRole = window.userRole;
-    
+  <script type="text/babel">
     const { useState, useMemo } = React;
 
     // Icons as simple SVG components
@@ -2335,22 +2064,19 @@
       );
     }
 
-    function CashierManager({ cashiers, setCashiers, saveCashierToSupabase, deleteCashierFromSupabase }) {
+    function CashierManager({ cashiers, setCashiers }) {
       const [newCashier, setNewCashier] = useState('');
       const [isOpen, setIsOpen] = useState(false);
 
       const addCashier = () => {
         if (newCashier.trim() && !cashiers.includes(newCashier.trim())) {
-          const name = newCashier.trim();
-          setCashiers([...cashiers, name]);
-          saveCashierToSupabase(name);
+          setCashiers([...cashiers, newCashier.trim()]);
           setNewCashier('');
         }
       };
 
       const removeCashier = (name) => {
         setCashiers(cashiers.filter(c => c !== name));
-        deleteCashierFromSupabase(name);
       };
 
       return (
@@ -2464,7 +2190,7 @@
     }
 
     function App() {
-      const [userRole, setUserRole] = useState(initialUserRole); // Ruolo dal login HTML
+      const [userRole, setUserRole] = useState(null); // null, 'admin', 'employee'
       
       // State
       const [reviews, setReviews] = useState([]);
@@ -2481,16 +2207,6 @@
       
       // Backup recensioni per funzione "Annulla"
       const [reviewsBackup, setReviewsBackup] = useState(null);
-      
-      // Indicatore salvataggio
-      const [saveStatus, setSaveStatus] = useState(null); // null, 'saving', 'saved', 'error'
-      
-      const showSaveIndicator = (status) => {
-        setSaveStatus(status);
-        if (status === 'saved') {
-          setTimeout(() => setSaveStatus(null), 2000);
-        }
-      };
 
       // Load data from Supabase on mount
       React.useEffect(() => {
@@ -2507,15 +2223,10 @@
           let hasMore = true;
           
           while (hasMore) {
-            const { data: reviewsData, error: reviewsError } = await supabaseClient
+            const { data: reviewsData } = await supabase
               .from('reviews_dashboard')
               .select('*')
               .range(page * pageSize, (page + 1) * pageSize - 1);
-            
-            if (reviewsError) {
-              console.error('Error loading reviews:', reviewsError);
-              break;
-            }
             
             if (reviewsData && reviewsData.length > 0) {
               allReviews = [...allReviews, ...reviewsData];
@@ -2528,11 +2239,10 @@
             }
           }
           
-          setReviews(allReviews);
-          console.log('Loaded reviews:', allReviews.length);
+          if (allReviews.length > 0) setReviews(allReviews);
 
           // Load cashiers
-          const { data: cashiersData } = await supabaseClient
+          const { data: cashiersData } = await supabase
             .from('cashiers_dashboard')
             .select('*');
           if (cashiersData && cashiersData.length > 0) {
@@ -2540,7 +2250,7 @@
           }
 
           // Load settings
-          const { data: settingsData } = await supabaseClient
+          const { data: settingsData } = await supabase
             .from('settings_dashboard')
             .select('*');
           if (settingsData) {
@@ -2563,121 +2273,63 @@
 
       // Save setting to Supabase
       const saveSettingToSupabase = async (key, value) => {
-        showSaveIndicator('saving');
         try {
-          const { error } = await supabaseClient
+          const { error } = await supabase
             .from('settings_dashboard')
             .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
-          if (error) {
-            console.error('Error saving setting:', error);
-            showSaveIndicator('error');
-          } else {
-            showSaveIndicator('saved');
-          }
+          if (error) console.error('Error saving setting:', error);
         } catch (err) {
           console.error('Error:', err);
-          showSaveIndicator('error');
         }
       };
 
-      // Save reviews to Supabase (con controllo duplicati)
+      // Save reviews to Supabase
       const saveReviewsToSupabase = async (newReviews) => {
-        showSaveIndicator('saving');
         try {
-          // Carica recensioni esistenti per controllo duplicati
-          const { data: existingReviews } = await supabaseClient
+          const { error } = await supabase
             .from('reviews_dashboard')
-            .select('text, date, reviewer');
-          
-          // Crea un Set di chiavi uniche per le recensioni esistenti
-          const existingKeys = new Set();
-          if (existingReviews) {
-            existingReviews.forEach(r => {
-              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
-              existingKeys.add(key);
-            });
-          }
-          
-          // Filtra solo le recensioni nuove (non duplicate)
-          const uniqueReviews = newReviews.filter(r => {
-            const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
-            return !existingKeys.has(key);
-          });
-          
-          const duplicateCount = newReviews.length - uniqueReviews.length;
-          
-          if (uniqueReviews.length === 0) {
-            showSaveIndicator('duplicate');
-            return { saved: 0, duplicates: duplicateCount };
-          }
-          
-          const { error } = await supabaseClient
-            .from('reviews_dashboard')
-            .insert(uniqueReviews.map(r => ({
+            .insert(newReviews.map(r => ({
               store: r.store || '',
               rating: r.rating || 0,
               text: r.text || '',
               reviewer: r.reviewer || '',
               date: r.date || ''
             })));
-          if (error) {
-            console.error('Error saving reviews:', error);
-            showSaveIndicator('error');
-            return { saved: 0, duplicates: duplicateCount, error: true };
-          } else {
-            showSaveIndicator('saved');
-            return { saved: uniqueReviews.length, duplicates: duplicateCount };
-          }
+          if (error) console.error('Error saving reviews:', error);
         } catch (err) {
           console.error('Error:', err);
-          showSaveIndicator('error');
-          return { saved: 0, duplicates: 0, error: true };
         }
       };
 
       // Save cashier to Supabase
       const saveCashierToSupabase = async (name) => {
-        showSaveIndicator('saving');
         try {
-          const { error } = await supabaseClient
+          const { error } = await supabase
             .from('cashiers_dashboard')
             .insert({ name });
-          if (error) {
-            console.error('Error saving cashier:', error);
-            showSaveIndicator('error');
-          } else {
-            showSaveIndicator('saved');
-          }
+          if (error) console.error('Error saving cashier:', error);
         } catch (err) {
           console.error('Error:', err);
-          showSaveIndicator('error');
         }
       };
 
       // Delete cashier from Supabase
       const deleteCashierFromSupabase = async (name) => {
-        showSaveIndicator('saving');
         try {
-          const { error } = await supabaseClient
+          const { error } = await supabase
             .from('cashiers_dashboard')
             .delete()
             .eq('name', name);
-          if (error) {
-            console.error('Error deleting cashier:', error);
-            showSaveIndicator('error');
-          } else {
-            showSaveIndicator('saved');
-          }
+          if (error) console.error('Error deleting cashier:', error);
         } catch (err) {
           console.error('Error:', err);
-          showSaveIndicator('error');
         }
       };
 
       // Clear all reviews from Supabase
       const clearReviewsFromSupabase = async () => {
         try {
-          const { error } = await supabaseClient
+          const { error } = await supabase
             .from('reviews_dashboard')
             .delete()
             .neq('id', 0);
@@ -2785,25 +2437,7 @@
           const storeObj = STORES.find(s => s.id === detectedStore);
           const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
           
-          // Filtra duplicati localmente (confronta con recensioni già caricate)
-          setReviews(prev => {
-            const existingKeys = new Set();
-            prev.forEach(r => {
-              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
-              existingKeys.add(key);
-            });
-            
-            const uniqueNewReviews = reviewsWithStore.filter(r => {
-              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
-              return !existingKeys.has(key);
-            });
-            
-            return [...prev, ...uniqueNewReviews];
-          });
-          
-          // Salva su Supabase (controlla duplicati anche lì)
-          saveReviewsToSupabase(reviewsWithStore);
-          
+          setReviews(prev => [...prev, ...reviewsWithStore]);
           setUploadedFiles(prev => [...prev, { 
             name: file.name, 
             store: detectedStore,
@@ -2893,9 +2527,13 @@
       }, [selectedMonth]);
 
       const handleLogout = () => {
-        // Ricarica la pagina per tornare al login HTML
-        window.location.reload();
+        setUserRole(null);
       };
+
+      // Show login screen if not authenticated
+      if (!userRole) {
+        return <LoginScreen onLogin={setUserRole} />;
+      }
 
       const isAdmin = userRole === 'admin';
 
@@ -2905,14 +2543,6 @@
             <h1 className="logo">DONTS Reviews</h1>
             <p className="subtitle">Dashboard Recensioni Google • Classifica Store & Cassieri</p>
             <div className="user-info">
-              {saveStatus && (
-                <span className={`save-indicator ${saveStatus}`}>
-                  {saveStatus === 'saving' && '⏳ Salvataggio...'}
-                  {saveStatus === 'saved' && '✅ Salvato'}
-                  {saveStatus === 'error' && '❌ Errore'}
-                  {saveStatus === 'duplicate' && '⚠️ Già importate'}
-                </span>
-              )}
               <span className="user-role">{isAdmin ? '👑 Admin' : '👤 User'}</span>
               <button className="logout-btn" onClick={handleLogout}>Esci</button>
             </div>
@@ -3069,12 +2699,7 @@
           )}
           
           {isAdmin && (
-            <CashierManager 
-              cashiers={cashiers} 
-              setCashiers={setCashiers}
-              saveCashierToSupabase={saveCashierToSupabase}
-              deleteCashierFromSupabase={deleteCashierFromSupabase}
-            />
+            <CashierManager cashiers={cashiers} setCashiers={setCashiers} />
           )}
           
           <div className="rankings-container">
