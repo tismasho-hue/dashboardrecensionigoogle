@@ -16,11 +16,22 @@
       box-sizing: border-box;
     }
     
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+    
     body {
       font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       color: #e4e4e7;
+    }
+    
+    #root {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
     }
     
     .dashboard {
@@ -31,11 +42,18 @@
     
     .login-screen {
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
       padding: 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
     }
     
     .login-container {
@@ -1398,13 +1416,37 @@
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%); color: white; font-family: sans-serif; flex-direction: column; gap: 1rem;">
+      <div style="font-size: 2rem;">🍔</div>
+      <div>Caricamento DONTS Reviews...</div>
+    </div>
+  </div>
+  
+  <script>
+    // Aspetta che tutte le librerie siano caricate
+    window.addEventListener('load', function() {
+      if (!window.supabase) {
+        document.getElementById('root').innerHTML = '<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f0f23; color: #f87171; font-family: sans-serif;">Errore: Supabase non caricato. Ricarica la pagina.</div>';
+        return;
+      }
+      if (!window.React) {
+        document.getElementById('root').innerHTML = '<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f0f23; color: #f87171; font-family: sans-serif;">Errore: React non caricato. Ricarica la pagina.</div>';
+        return;
+      }
+    });
+  </script>
   
   <script type="text/babel">
     // Inizializza Supabase
     const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient;
+    try {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+      console.error('Errore inizializzazione Supabase:', e);
+    }
     
     const { useState, useMemo } = React;
 
