@@ -2012,7 +2012,7 @@
                     <div className="cashier-info">
                       <div className="cashier-name">
                         {cashier.name}
-                        {cashier.canWin && <span className="can-win-badge">✓ Idoneo</span>}
+
                       </div>
                       <div className="cashier-metrics">
                         <span className="metric positive">
@@ -2228,7 +2228,17 @@
             }
             if (!data || data.length < 500) break;
           }
-          if (allReviews.length > 0) setReviews(allReviews);
+          
+          // Rimuovi duplicati (stesso testo + data + reviewer)
+          const seen = new Set();
+          const uniqueReviews = allReviews.filter(r => {
+            const key = (r.text || '') + '_' + (r.date || '') + '_' + (r.reviewer || '');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          
+          if (uniqueReviews.length > 0) setReviews(uniqueReviews);
 
           // Load cashiers
           const { data: cashiersData } = await supabaseDb
