@@ -2092,19 +2092,22 @@
       );
     }
 
-    function CashierManager({ cashiers, setCashiers }) {
+    function CashierManager({ cashiers, setCashiers, saveCashierToSupabase, deleteCashierFromSupabase }) {
       const [newCashier, setNewCashier] = useState('');
       const [isOpen, setIsOpen] = useState(false);
 
       const addCashier = () => {
         if (newCashier.trim() && !cashiers.includes(newCashier.trim())) {
-          setCashiers([...cashiers, newCashier.trim()]);
+          const name = newCashier.trim();
+          setCashiers([...cashiers, name]);
+          saveCashierToSupabase(name);
           setNewCashier('');
         }
       };
 
       const removeCashier = (name) => {
         setCashiers(cashiers.filter(c => c !== name));
+        deleteCashierFromSupabase(name);
       };
 
       return (
@@ -2485,6 +2488,10 @@
           const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
           
           setReviews(prev => [...prev, ...reviewsWithStore]);
+          
+          // Salva su Supabase
+          saveReviewsToSupabase(reviewsWithStore);
+          
           setUploadedFiles(prev => [...prev, { 
             name: file.name, 
             store: detectedStore,
@@ -2753,7 +2760,12 @@
           )}
           
           {isAdmin && (
-            <CashierManager cashiers={cashiers} setCashiers={setCashiers} />
+            <CashierManager 
+              cashiers={cashiers} 
+              setCashiers={setCashiers}
+              saveCashierToSupabase={saveCashierToSupabase}
+              deleteCashierFromSupabase={deleteCashierFromSupabase}
+            />
           )}
           
           <div className="rankings-container">
