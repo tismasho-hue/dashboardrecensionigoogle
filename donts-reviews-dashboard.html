@@ -2216,11 +2216,19 @@
       const loadFromSupabase = async () => {
         setIsLoading(true);
         try {
-          // Load reviews
-          const { data: reviewsData } = await supabaseDb
-            .from('reviews_dashboard')
-            .select('*');
-          if (reviewsData) setReviews(reviewsData);
+          // Load reviews in blocchi da 500 per compatibilità iPhone
+          let allReviews = [];
+          for (let i = 0; i < 10; i++) {
+            const { data } = await supabaseDb
+              .from('reviews_dashboard')
+              .select('*')
+              .range(i * 500, (i + 1) * 500 - 1);
+            if (data && data.length > 0) {
+              allReviews = allReviews.concat(data);
+            }
+            if (!data || data.length < 500) break;
+          }
+          if (allReviews.length > 0) setReviews(allReviews);
 
           // Load cashiers
           const { data: cashiersData } = await supabaseDb
