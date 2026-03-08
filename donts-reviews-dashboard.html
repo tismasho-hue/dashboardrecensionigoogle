@@ -2606,6 +2606,25 @@
                 </div>
               )}
               
+              <div style={{marginTop: '1rem'}}>
+                <button 
+                  className="clear-data" 
+                  style={{background: 'rgba(248,113,113,0.2)', color: '#f87171', padding: '0.8rem 1.5rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600'}}
+                  onClick={() => {
+                    if (window.confirm('⚠️ Sei sicuro di voler CANCELLARE TUTTE le recensioni dal database? Questa azione non può essere annullata!')) {
+                      if (window.confirm('🚨 CONFERMA FINALE: Tutte le ' + reviews.length + ' recensioni verranno eliminate. Procedere?')) {
+                        clearReviewsFromSupabase();
+                        setReviews([]);
+                        setUploadedFiles([]);
+                        alert('✅ Tutte le recensioni sono state cancellate dal database.');
+                      }
+                    }
+                  }}
+                >
+                  🗑️ Cancella TUTTE le recensioni dal database
+                </button>
+              </div>
+              
               {reviewsBackup && reviewsBackup.length > 0 && (
                 <div className="restore-backup">
                   <button className="restore-btn" onClick={restoreReviewsFromBackup}>
