@@ -2216,9 +2216,9 @@
       const loadFromSupabase = async () => {
         setIsLoading(true);
         try {
-          // Load reviews in blocchi da 500 per compatibilità iPhone
+          // Load reviews in blocchi da 500 per compatibilità iPhone (max 10000)
           let allReviews = [];
-          for (let i = 0; i < 10; i++) {
+          for (let i = 0; i < 20; i++) {
             const { data } = await supabaseDb
               .from('reviews_dashboard')
               .select('*')
@@ -2285,9 +2285,9 @@
       // Save reviews to Supabase
       const saveReviewsToSupabase = async (newReviews) => {
         try {
-          // Carica recensioni esistenti per controllo duplicati
+          // Carica recensioni esistenti per controllo duplicati (max 10000)
           let existingReviews = [];
-          for (let i = 0; i < 10; i++) {
+          for (let i = 0; i < 20; i++) {
             const { data } = await supabaseDb
               .from('reviews_dashboard')
               .select('text, date, reviewer')
@@ -2476,7 +2476,20 @@
           // Salva su Supabase (controlla duplicati)
           saveReviewsToSupabase(reviewsWithStore);
           
-          setReviews(prev => [...prev, ...reviewsWithStore]);
+          // Aggiungi solo recensioni non duplicate localmente
+          setReviews(prev => {
+            const existingKeys = new Set();
+            prev.forEach(r => {
+              const key = (r.text || '') + '_' + (r.date || '') + '_' + (r.reviewer || '');
+              existingKeys.add(key);
+            });
+            const uniqueNew = reviewsWithStore.filter(r => {
+              const key = (r.text || '') + '_' + (r.date || '') + '_' + (r.reviewer || '');
+              return !existingKeys.has(key);
+            });
+            return [...prev, ...uniqueNew];
+          });
+          
           setUploadedFiles(prev => [...prev, { 
             name: file.name, 
             store: detectedStore,
