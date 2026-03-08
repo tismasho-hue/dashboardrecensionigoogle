@@ -2522,9 +2522,23 @@
           const storeObj = STORES.find(s => s.id === detectedStore);
           const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
           
-          setReviews(prev => [...prev, ...reviewsWithStore]);
+          // Filtra duplicati localmente (confronta con recensioni già caricate)
+          setReviews(prev => {
+            const existingKeys = new Set();
+            prev.forEach(r => {
+              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
+              existingKeys.add(key);
+            });
+            
+            const uniqueNewReviews = reviewsWithStore.filter(r => {
+              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
+              return !existingKeys.has(key);
+            });
+            
+            return [...prev, ...uniqueNewReviews];
+          });
           
-          // Salva su Supabase
+          // Salva su Supabase (controlla duplicati anche lì)
           saveReviewsToSupabase(reviewsWithStore);
           
           setUploadedFiles(prev => [...prev, { 
