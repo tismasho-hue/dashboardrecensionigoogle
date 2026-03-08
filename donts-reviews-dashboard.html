@@ -2314,12 +2314,8 @@
           const duplicateCount = newReviews.length - uniqueNewReviews.length;
           
           if (uniqueNewReviews.length === 0) {
-            alert('⚠️ Tutte le ' + newReviews.length + ' recensioni erano già presenti nel database.');
+            // Nessun alert - duplicati gestiti silenziosamente
             return;
-          }
-          
-          if (duplicateCount > 0) {
-            alert('ℹ️ ' + duplicateCount + ' duplicati saltati. Salvate ' + uniqueNewReviews.length + ' nuove recensioni.');
           }
           
           const { error } = await supabaseDb
