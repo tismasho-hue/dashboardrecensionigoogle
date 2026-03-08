@@ -2217,13 +2217,13 @@
         setIsLoading(true);
         try {
           // Load reviews
-          const { data: reviewsData } = await supabase
+          const { data: reviewsData } = await supabaseDb
             .from('reviews_dashboard')
             .select('*');
           if (reviewsData) setReviews(reviewsData);
 
           // Load cashiers
-          const { data: cashiersData } = await supabase
+          const { data: cashiersData } = await supabaseDb
             .from('cashiers_dashboard')
             .select('*');
           if (cashiersData && cashiersData.length > 0) {
@@ -2231,7 +2231,7 @@
           }
 
           // Load settings
-          const { data: settingsData } = await supabase
+          const { data: settingsData } = await supabaseDb
             .from('settings_dashboard')
             .select('*');
           if (settingsData) {
@@ -2255,7 +2255,7 @@
       // Save setting to Supabase
       const saveSettingToSupabase = async (key, value) => {
         try {
-          const { error } = await supabase
+          const { error } = await supabaseDb
             .from('settings_dashboard')
             .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
           if (error) console.error('Error saving setting:', error);
@@ -2267,7 +2267,7 @@
       // Save reviews to Supabase
       const saveReviewsToSupabase = async (newReviews) => {
         try {
-          const { error } = await supabase
+          const { error } = await supabaseDb
             .from('reviews_dashboard')
             .insert(newReviews.map(r => ({
               store: r.store || '',
@@ -2285,7 +2285,7 @@
       // Save cashier to Supabase
       const saveCashierToSupabase = async (name) => {
         try {
-          const { error } = await supabase
+          const { error } = await supabaseDb
             .from('cashiers_dashboard')
             .insert({ name });
           if (error) console.error('Error saving cashier:', error);
@@ -2297,7 +2297,7 @@
       // Delete cashier from Supabase
       const deleteCashierFromSupabase = async (name) => {
         try {
-          const { error } = await supabase
+          const { error } = await supabaseDb
             .from('cashiers_dashboard')
             .delete()
             .eq('name', name);
@@ -2310,7 +2310,7 @@
       // Clear all reviews from Supabase
       const clearReviewsFromSupabase = async () => {
         try {
-          const { error } = await supabase
+          const { error } = await supabaseDb
             .from('reviews_dashboard')
             .delete()
             .neq('id', 0);
