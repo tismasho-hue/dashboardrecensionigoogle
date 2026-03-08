@@ -2025,7 +2025,7 @@
                           <Icon name="star" size={12} fill="#FFD700" stroke="#FFD700" /> {cashier.avgRating}
                         </span>
                       </div>
-                      {!cashier.canWin && (
+                      {isAdmin && !cashier.canWin && (
                         <div className="progress-bar-container">
                           <div className="progress-bar" style={{ width: `${cashier.progressToWin}%` }}></div>
                           <span className="progress-text">{cashier.mentions}/50</span>
@@ -2472,6 +2472,9 @@
           // Find store name for display
           const storeObj = STORES.find(s => s.id === detectedStore);
           const storeLabelForDisplay = storeObj ? storeObj.name : (detectedStore || 'Non riconosciuto');
+          
+          // Salva su Supabase (controlla duplicati)
+          saveReviewsToSupabase(reviewsWithStore);
           
           setReviews(prev => [...prev, ...reviewsWithStore]);
           setUploadedFiles(prev => [...prev, { 
