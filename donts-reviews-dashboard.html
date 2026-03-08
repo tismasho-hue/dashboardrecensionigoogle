@@ -207,6 +207,11 @@
       color: #f87171;
     }
     
+    .save-indicator.duplicate {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-5px); }
       to { opacity: 1; transform: translateY(0); }
@@ -2312,13 +2317,40 @@
         }
       };
 
-      // Save reviews to Supabase
+      // Save reviews to Supabase (con controllo duplicati)
       const saveReviewsToSupabase = async (newReviews) => {
         showSaveIndicator('saving');
         try {
+          // Carica recensioni esistenti per controllo duplicati
+          const { data: existingReviews } = await supabaseClient
+            .from('reviews_dashboard')
+            .select('text, date, reviewer');
+          
+          // Crea un Set di chiavi uniche per le recensioni esistenti
+          const existingKeys = new Set();
+          if (existingReviews) {
+            existingReviews.forEach(r => {
+              const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
+              existingKeys.add(key);
+            });
+          }
+          
+          // Filtra solo le recensioni nuove (non duplicate)
+          const uniqueReviews = newReviews.filter(r => {
+            const key = `${r.text || ''}_${r.date || ''}_${r.reviewer || ''}`;
+            return !existingKeys.has(key);
+          });
+          
+          const duplicateCount = newReviews.length - uniqueReviews.length;
+          
+          if (uniqueReviews.length === 0) {
+            showSaveIndicator('duplicate');
+            return { saved: 0, duplicates: duplicateCount };
+          }
+          
           const { error } = await supabaseClient
             .from('reviews_dashboard')
-            .insert(newReviews.map(r => ({
+            .insert(uniqueReviews.map(r => ({
               store: r.store || '',
               rating: r.rating || 0,
               text: r.text || '',
@@ -2328,12 +2360,15 @@
           if (error) {
             console.error('Error saving reviews:', error);
             showSaveIndicator('error');
+            return { saved: 0, duplicates: duplicateCount, error: true };
           } else {
             showSaveIndicator('saved');
+            return { saved: uniqueReviews.length, duplicates: duplicateCount };
           }
         } catch (err) {
           console.error('Error:', err);
           showSaveIndicator('error');
+          return { saved: 0, duplicates: 0, error: true };
         }
       };
 
@@ -2602,6 +2637,7 @@
                   {saveStatus === 'saving' && '⏳ Salvataggio...'}
                   {saveStatus === 'saved' && '✅ Salvato'}
                   {saveStatus === 'error' && '❌ Errore'}
+                  {saveStatus === 'duplicate' && '⚠️ Già importate'}
                 </span>
               )}
               <span className="user-role">{isAdmin ? '👑 Admin' : '👤 User'}</span>
