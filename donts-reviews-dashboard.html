@@ -2,18 +2,13 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>DONTS Reviews Dashboard</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  </script>
   <style>
     * {
       margin: 0;
@@ -1406,6 +1401,11 @@
   <div id="root"></div>
   
   <script type="text/babel">
+    // Inizializza Supabase
+    const SUPABASE_URL = 'https://ilpsylhtoljilgcubrun.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlscHN5bGh0b2xqaWxnY3VicnVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NzY4MTgsImV4cCI6MjA4NzU1MjgxOH0.Po-V23sHS5rNoL0P7gXQdubB9Rv1Hojns_LKtrC9hM0';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
     const { useState, useMemo } = React;
 
     // Icons as simple SVG components
