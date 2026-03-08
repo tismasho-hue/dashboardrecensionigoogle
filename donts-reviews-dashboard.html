@@ -2285,9 +2285,46 @@
       // Save reviews to Supabase
       const saveReviewsToSupabase = async (newReviews) => {
         try {
+          // Carica recensioni esistenti per controllo duplicati
+          let existingReviews = [];
+          for (let i = 0; i < 10; i++) {
+            const { data } = await supabaseDb
+              .from('reviews_dashboard')
+              .select('text, date, reviewer')
+              .range(i * 500, (i + 1) * 500 - 1);
+            if (data && data.length > 0) {
+              existingReviews = existingReviews.concat(data);
+            }
+            if (!data || data.length < 500) break;
+          }
+          
+          // Crea set di chiavi esistenti
+          const existingKeys = new Set();
+          existingReviews.forEach(r => {
+            const key = (r.text || '') + '_' + (r.date || '') + '_' + (r.reviewer || '');
+            existingKeys.add(key);
+          });
+          
+          // Filtra solo recensioni nuove
+          const uniqueNewReviews = newReviews.filter(r => {
+            const key = (r.text || '') + '_' + (r.date || '') + '_' + (r.reviewer || '');
+            return !existingKeys.has(key);
+          });
+          
+          const duplicateCount = newReviews.length - uniqueNewReviews.length;
+          
+          if (uniqueNewReviews.length === 0) {
+            alert('⚠️ Tutte le ' + newReviews.length + ' recensioni erano già presenti nel database.');
+            return;
+          }
+          
+          if (duplicateCount > 0) {
+            alert('ℹ️ ' + duplicateCount + ' duplicati saltati. Salvate ' + uniqueNewReviews.length + ' nuove recensioni.');
+          }
+          
           const { error } = await supabaseDb
             .from('reviews_dashboard')
-            .insert(newReviews.map(r => ({
+            .insert(uniqueNewReviews.map(r => ({
               store: r.store || '',
               rating: r.rating || 0,
               text: r.text || '',
