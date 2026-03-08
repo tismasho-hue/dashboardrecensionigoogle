@@ -184,6 +184,34 @@
       margin-top: 1rem;
     }
     
+    .save-indicator {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .save-indicator.saving {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+    }
+    
+    .save-indicator.saved {
+      background: rgba(74, 222, 128, 0.2);
+      color: #4ade80;
+    }
+    
+    .save-indicator.error {
+      background: rgba(248, 113, 113, 0.2);
+      color: #f87171;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
     .user-role {
       background: rgba(255,107,53,0.15);
       color: #FF6B35;
@@ -2207,6 +2235,16 @@
       
       // Backup recensioni per funzione "Annulla"
       const [reviewsBackup, setReviewsBackup] = useState(null);
+      
+      // Indicatore salvataggio
+      const [saveStatus, setSaveStatus] = useState(null); // null, 'saving', 'saved', 'error'
+      
+      const showSaveIndicator = (status) => {
+        setSaveStatus(status);
+        if (status === 'saved') {
+          setTimeout(() => setSaveStatus(null), 2000);
+        }
+      };
 
       // Load data from Supabase on mount
       React.useEffect(() => {
@@ -2254,18 +2292,26 @@
 
       // Save setting to Supabase
       const saveSettingToSupabase = async (key, value) => {
+        showSaveIndicator('saving');
         try {
           const { error } = await supabaseClient
             .from('settings_dashboard')
             .upsert({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
-          if (error) console.error('Error saving setting:', error);
+          if (error) {
+            console.error('Error saving setting:', error);
+            showSaveIndicator('error');
+          } else {
+            showSaveIndicator('saved');
+          }
         } catch (err) {
           console.error('Error:', err);
+          showSaveIndicator('error');
         }
       };
 
       // Save reviews to Supabase
       const saveReviewsToSupabase = async (newReviews) => {
+        showSaveIndicator('saving');
         try {
           const { error } = await supabaseClient
             .from('reviews_dashboard')
@@ -2276,34 +2322,54 @@
               reviewer: r.reviewer || '',
               date: r.date || ''
             })));
-          if (error) console.error('Error saving reviews:', error);
+          if (error) {
+            console.error('Error saving reviews:', error);
+            showSaveIndicator('error');
+          } else {
+            showSaveIndicator('saved');
+          }
         } catch (err) {
           console.error('Error:', err);
+          showSaveIndicator('error');
         }
       };
 
       // Save cashier to Supabase
       const saveCashierToSupabase = async (name) => {
+        showSaveIndicator('saving');
         try {
           const { error } = await supabaseClient
             .from('cashiers_dashboard')
             .insert({ name });
-          if (error) console.error('Error saving cashier:', error);
+          if (error) {
+            console.error('Error saving cashier:', error);
+            showSaveIndicator('error');
+          } else {
+            showSaveIndicator('saved');
+          }
         } catch (err) {
           console.error('Error:', err);
+          showSaveIndicator('error');
         }
       };
 
       // Delete cashier from Supabase
       const deleteCashierFromSupabase = async (name) => {
+        showSaveIndicator('saving');
         try {
           const { error } = await supabaseClient
             .from('cashiers_dashboard')
             .delete()
             .eq('name', name);
-          if (error) console.error('Error deleting cashier:', error);
+          if (error) {
+            console.error('Error deleting cashier:', error);
+            showSaveIndicator('error');
+          } else {
+            showSaveIndicator('saved');
+          }
         } catch (err) {
           console.error('Error:', err);
+          showSaveIndicator('error');
         }
       };
 
@@ -2524,6 +2590,13 @@
             <h1 className="logo">DONTS Reviews</h1>
             <p className="subtitle">Dashboard Recensioni Google • Classifica Store & Cassieri</p>
             <div className="user-info">
+              {saveStatus && (
+                <span className={`save-indicator ${saveStatus}`}>
+                  {saveStatus === 'saving' && '⏳ Salvataggio...'}
+                  {saveStatus === 'saved' && '✅ Salvato'}
+                  {saveStatus === 'error' && '❌ Errore'}
+                </span>
+              )}
               <span className="user-role">{isAdmin ? '👑 Admin' : '👤 User'}</span>
               <button className="logout-btn" onClick={handleLogout}>Esci</button>
             </div>
